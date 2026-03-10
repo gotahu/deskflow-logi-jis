@@ -86,6 +86,8 @@ elseif(APPLE)
     OSXEventQueueBuffer.h
     OSXKeyLayoutResource.cpp
     OSXKeyLayoutResource.h
+    OSXKeyCalibration.h
+    OSXKeyCalibration.mm
     OSXKeyState.cpp
     OSXKeyState.h
     OSXMediaKeySupport.h
