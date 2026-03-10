@@ -1228,7 +1228,7 @@ bool OSXScreen::onKey(CGEventRef event)
     if (enforceAscii) {
       newMask = adjustRemoteCapsLockMask(oldMask, newMask, static_cast<CGKeyCode>(virtualKey));
     }
-    m_keyState->handleModifierKeys(getEventTarget(), oldMask, newMask);
+    m_keyState->handleModifierKeys(getEventTarget(), virtualKey, oldMask, newMask);
 
     // if the current set of modifiers exactly matches a modifiers-only
     // hot key then generate a hot key down event.

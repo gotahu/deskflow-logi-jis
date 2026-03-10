@@ -41,7 +41,7 @@ public:
   Determines which modifier keys have changed and updates the modifier
   state and sends key events as appropriate.
   */
-  void handleModifierKeys(void *target, KeyModifierMask oldMask, KeyModifierMask newMask);
+  void handleModifierKeys(void *target, uint32_t virtualKey, KeyModifierMask oldMask, KeyModifierMask newMask);
 
   //@}
   //! @name accessors
@@ -171,10 +171,5 @@ private:
   bool m_altPressed;
   bool m_superPressed;
   bool m_capsPressed;
-  // track whether the right-hand variant of a modifier is held so the
-  // device-dependent event flags report the correct side.
-  bool m_shiftRightPressed;
-  bool m_controlRightPressed;
-  bool m_altRightPressed;
-  bool m_superRightPressed;
+  CGEventFlags m_deviceDependentFlags;
 };
