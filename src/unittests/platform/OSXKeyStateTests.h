@@ -21,6 +21,8 @@ private Q_SLOTS:
   void adjustModifiersForRemoteCapsLock_disabled_preservesModifiers();
   void adjustModifiersForRemoteCapsLock_enabledAndActive_addsCapsLock();
   void adjustModifiersForRemoteCapsLock_enabledAndInactive_removesCapsLock();
+  void jisImeKeysMapToNativeKeys();
+  void bothModifierSidesRemainPressed();
   void fakePollShift();
   void fakePollChar();
   void fakePollCharWithModifier();

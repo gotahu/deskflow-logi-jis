@@ -173,6 +173,38 @@ p, li { white-space: pre-wrap; }
         <source>Use dynamic reconnection time based on connection attempts</source>
         <translation type="unfinished">根据连接尝试次数，采用动态重连时间</translation>
     </message>
+    <message>
+        <source>Navigation Gesture Actions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose how navigation actions received from a Deskflow server behave on this computer.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Action 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ignore</source>
+        <translation type="unfinished">忽略</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Custom shortcut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Action 2</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>FingerprintDialog</name>
@@ -274,6 +306,112 @@ Do you want to connect to the server?
     <message>
         <source>Enter the specification for the hotkey:</source>
         <translation>输入热键定义：</translation>
+    </message>
+</context>
+<context>
+    <name>KeyCaptureButton</name>
+    <message>
+        <source>Press a key...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>KeyMapCalibrationDialog</name>
+    <message>
+        <source>Keyboard Calibration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Physical key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Click to capture</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Key code</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Deskflow key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use the same key for each capture. Mouse clicks are ignored while recording.
+Saved to ~/Library/Deskflow/keyboard-calibration.json
+
+Overrides can also be added manually in keyboard-calibration.json.
+Example: &quot;overrides&quot;: [ { &quot;match&quot;: { &quot;id&quot;: &quot;F13&quot; }, &quot;send&quot;: { &quot;id&quot;: &quot;Control_L&quot; } }, { ... } ]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation type="unfinished">关闭</translation>
+    </message>
+    <message>
+        <source>Unable to Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not create the selected folder.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The JSON file is corrupted or you do not have permission to read it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The JSON file is invalid and could not be opened.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You do not have permission to write to the JSON file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Writing to the JSON file failed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Saved successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Saved to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not captured</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Capture a physical key and a Deskflow key.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Capture the physical key first.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Capture the Deskflow key next.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Both captures match. Saving will still update the JSON.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The text matches, but the key code is different.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Difference detected. Saving will append or replace this mapping in the JSON.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -415,6 +553,10 @@ Do you want to connect to the server?
     <message>
         <source>&lt;p&gt;Failed to connect to the server &apos;%1&apos;.&lt;/p&gt;&lt;p&gt;A Client with your name is already connected to the server.&lt;/p&gt;Please ensure that you&apos;re using a unique name and that only a single instance of the client process is running.&lt;/p&gt;</source>
         <translation>&lt;p&gt;连接到服务器“%1”失败。&lt;/p&gt;&lt;p&gt;一个同名的客户端已连接到服务器。&lt;/p&gt;请确保您使用的名称唯一，且只有一个客户端进程实例在运行。&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>Keyboard Calibration</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>View &amp;Help</source>
@@ -1050,6 +1192,14 @@ Enabling this setting will disable the server config GUI.</source>
         <translation>配置文件路径</translation>
     </message>
     <message>
+        <source>Action 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Action 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>%1 Configurations (*.conf);;All files (*.*)</source>
         <extracomment>%1 is replaced with the application names (*.conf) and (*.*) should not be translated</extracomment>
         <translation>%1 配置 (*.conf);;所有文件 (*.*)</translation>
@@ -1068,7 +1218,39 @@ Enabling this setting will disable the server config GUI.</source>
     </message>
     <message>
         <source>Forwards macOS back and forward gestures as standard mouse buttons while controlling a client.</source>
-        <translation>控制客户端时，将 macOS 的后退和前进手势作为标准鼠标按钮转发。</translation>
+        <translation type="vanished">控制客户端时，将 macOS 的后退和前进手势作为标准鼠标按钮转发。</translation>
+    </message>
+    <message>
+        <source>Forwards selected macOS swipe gestures as configurable actions while controlling a client.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Action 1 input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Swipe left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Swipe right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Swipe up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Swipe down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detect…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Action 2 input</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

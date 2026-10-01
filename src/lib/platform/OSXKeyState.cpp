@@ -192,6 +192,10 @@ static const KeyEntry s_controlKeys[] = {
     {kKeyNumLock, s_numLockVK},
     {kKeyCapsLock, s_capsLockVK},
 
+    // Aliases emitted by Windows VK_IME_OFF / VK_IME_ON.
+    {kKeyEisuToggle, kVK_JIS_Eisu},
+    {kKeyKana, kVK_JIS_Kana},
+
     // JIS keyboards only
     {kKeyMuhenkan, kVK_JIS_Eisu},
     {kKeyHenkan, kVK_JIS_Kana},
@@ -858,7 +862,7 @@ KeyButton OSXKeyState::remapFakeKey(
 
   rewriteShiftKeystrokesForButton(keys, shiftButton, entry->m_targetButton, initialShift, targetShift);
 
-  LOG_DEBUG1(
+  LOG_DEBUG(
       "remapped calibrated key id=0x%04x mask=0x%04x local=0x%04x target=0x%04x shift=%d->%d", id, mask, localID,
       entry->m_targetButton, sourceShift ? 1 : 0, targetShift ? 1 : 0
   );
@@ -1052,32 +1056,35 @@ void OSXKeyState::handleModifierKeys(
   // synthesize changed modifier keys
   if ((changed & KeyModifierShift) != 0) {
     handleModifierKey(
-        target, virtualKey, virtualKey == s_rightShiftVK ? kKeyShift_R : kKeyShift_L, (newMask & KeyModifierShift) != 0,
+        target, virtualKey == s_rightShiftVK ? s_rightShiftVK : s_shiftVK,
+        virtualKey == s_rightShiftVK ? kKeyShift_R : kKeyShift_L, (newMask & KeyModifierShift) != 0,
         newMask
     );
   }
   if ((changed & KeyModifierControl) != 0) {
     handleModifierKey(
-        target, virtualKey, virtualKey == s_rightControlVK ? kKeyControl_R : kKeyControl_L,
+        target, virtualKey == s_rightControlVK ? s_rightControlVK : s_controlVK, virtualKey == s_rightControlVK ? kKeyControl_R : kKeyControl_L,
         (newMask & KeyModifierControl) != 0, newMask
     );
   }
   if ((changed & KeyModifierAlt) != 0) {
     handleModifierKey(
-        target, virtualKey, virtualKey == s_rightAltVK ? kKeyAlt_R : kKeyAlt_L, (newMask & KeyModifierAlt) != 0, newMask
+        target, virtualKey == s_rightAltVK ? s_rightAltVK : s_altVK,
+        virtualKey == s_rightAltVK ? kKeyAlt_R : kKeyAlt_L, (newMask & KeyModifierAlt) != 0, newMask
     );
   }
   if ((changed & KeyModifierSuper) != 0) {
     handleModifierKey(
-        target, virtualKey, virtualKey == s_rightSuperVK ? kKeySuper_R : kKeySuper_L, (newMask & KeyModifierSuper) != 0,
+        target, virtualKey == s_rightSuperVK ? s_rightSuperVK : s_superVK,
+        virtualKey == s_rightSuperVK ? kKeySuper_R : kKeySuper_L, (newMask & KeyModifierSuper) != 0,
         newMask
     );
   }
   if ((changed & KeyModifierCapsLock) != 0) {
-    handleModifierKey(target, virtualKey, kKeyCapsLock, (newMask & KeyModifierCapsLock) != 0, newMask);
+    handleModifierKey(target, s_capsLockVK, kKeyCapsLock, (newMask & KeyModifierCapsLock) != 0, newMask);
   }
   if ((changed & KeyModifierNumLock) != 0) {
-    handleModifierKey(target, virtualKey, kKeyNumLock, (newMask & KeyModifierNumLock) != 0, newMask);
+    handleModifierKey(target, s_numLockVK, kKeyNumLock, (newMask & KeyModifierNumLock) != 0, newMask);
   }
 }
 

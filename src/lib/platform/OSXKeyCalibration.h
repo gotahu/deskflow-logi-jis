@@ -9,6 +9,7 @@
 #include "deskflow/KeyTypes.h"
 
 #include <map>
+#include <string>
 
 class OSXKeyCalibration
 {
@@ -21,6 +22,7 @@ public:
   };
 
   OSXKeyCalibration();
+  explicit OSXKeyCalibration(const std::string &path);
 
   const Entry *find(KeyButton button, KeyModifierMask modifiers, KeyID targetID) const;
   KeyID remapKeyID(KeyID id) const;

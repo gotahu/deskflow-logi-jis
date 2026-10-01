@@ -144,9 +144,12 @@ KeyModifierMask parseModifiers(NSString *text)
 
 } // namespace
 
-OSXKeyCalibration::OSXKeyCalibration()
+OSXKeyCalibration::OSXKeyCalibration() : OSXKeyCalibration(calibrationFilePath())
 {
-  const auto path = calibrationFilePath();
+}
+
+OSXKeyCalibration::OSXKeyCalibration(const std::string &path)
+{
   if (path.empty()) {
     return;
   }
