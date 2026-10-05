@@ -324,6 +324,9 @@ private:
   static bool s_hasGHOM;
 
   // Quartz input event support
+  static CGEventRef handleCGScrollEvent(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon);
+  CFMachPortRef m_scrollTapPort = nullptr;
+  CFRunLoopSourceRef m_scrollTapSource = nullptr;
   CFMachPortRef m_eventTapPort;
   CFRunLoopSourceRef m_eventTapRLSR;
   std::thread m_eventTapThread;

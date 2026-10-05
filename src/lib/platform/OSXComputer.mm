@@ -725,6 +725,26 @@ void OSXComputer::enable()
     );
   }
 
+  if (m_isPrimary && m_eventTapPort) {
+    // Read scroll after session-level device drivers have applied their direction
+    // settings, so forwarding follows the scroll delivered to local applications.
+    m_scrollTapPort = CGEventTapCreate(
+        kCGAnnotatedSessionEventTap, kCGTailAppendEventTap, kCGEventTapOptionDefault,
+        CGEventMaskBit(kCGEventScrollWheel), handleCGScrollEvent, this
+    );
+    if (m_scrollTapPort) {
+      m_scrollTapSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, m_scrollTapPort, 0);
+      if (!m_scrollTapSource) {
+        CFMachPortInvalidate(m_scrollTapPort);
+        CFRelease(m_scrollTapPort);
+        m_scrollTapPort = nullptr;
+      }
+    }
+    if (!m_scrollTapPort) {
+      LOG_WARN("late scroll tap unavailable; using original HID scroll capture");
+    }
+  }
+
   if (m_eventTapPort) {
     m_eventTapRLSR = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, m_eventTapPort, 0);
     if (m_eventTapRLSR) {
@@ -735,9 +755,15 @@ void OSXComputer::enable()
       m_eventTapThread = std::thread([this, sem]() {
         m_eventTapRunLoop = CFRunLoopGetCurrent();
         CFRunLoopAddSource(m_eventTapRunLoop, m_eventTapRLSR, kCFRunLoopDefaultMode);
+        if (m_scrollTapSource) {
+          CFRunLoopAddSource(m_eventTapRunLoop, m_scrollTapSource, kCFRunLoopDefaultMode);
+        }
         dispatch_semaphore_signal(sem);
         CFRunLoopRun();
         CFRunLoopRemoveSource(CFRunLoopGetCurrent(), m_eventTapRLSR, kCFRunLoopDefaultMode);
+        if (m_scrollTapSource) {
+          CFRunLoopRemoveSource(CFRunLoopGetCurrent(), m_scrollTapSource, kCFRunLoopDefaultMode);
+        }
         m_eventTapRunLoop = nullptr;
       });
       dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
@@ -761,6 +787,17 @@ void OSXComputer::disable()
   }
   if (m_eventTapThread.joinable()) {
     m_eventTapThread.join();
+  }
+
+  if (m_scrollTapSource) {
+    CFRelease(m_scrollTapSource);
+    m_scrollTapSource = nullptr;
+  }
+  if (m_scrollTapPort) {
+    CGEventTapEnable(m_scrollTapPort, false);
+    CFMachPortInvalidate(m_scrollTapPort);
+    CFRelease(m_scrollTapPort);
+    m_scrollTapPort = nullptr;
   }
 
   if (m_eventTapRLSR) {
@@ -1808,6 +1845,25 @@ OSXComputer::handleCGInputEventSecondary(CGEventTapProxy proxy, CGEventType type
   return event;
 }
 
+CGEventRef OSXComputer::handleCGScrollEvent(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon)
+{
+  auto *computer = static_cast<OSXComputer *>(refcon);
+  if (type == kCGEventTapDisabledByTimeout) {
+    if (computer->checkAXPermissions()) {
+      CGEventTapEnable(computer->m_scrollTapPort, true);
+    }
+    return event;
+  }
+  if (type != kCGEventScrollWheel || computer->m_isOnComputer) {
+    return event;
+  }
+  computer->onMouseWheel(
+      computer->mapScrollWheelToDeskflow(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis2)),
+      computer->mapScrollWheelToDeskflow(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis1))
+  );
+  return nullptr;
+}
+
 // Quartz event tap support
 CGEventRef OSXComputer::handleCGInputEvent(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon)
 {
@@ -1833,6 +1889,10 @@ CGEventRef OSXComputer::handleCGInputEvent(CGEventTapProxy proxy, CGEventType ty
     computer->onMouseMove(event);
     break;
   case kCGEventScrollWheel:
+    // Let device drivers see the event; the later tap forwards and consumes it.
+    if (computer->m_scrollTapPort) {
+      return event;
+    }
     computer->onMouseWheel(
         computer->mapScrollWheelToDeskflow(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis2)),
         computer->mapScrollWheelToDeskflow(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis1))

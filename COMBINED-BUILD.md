@@ -69,3 +69,11 @@ codesign --force --deep --sign - /path/to/output/Deskflow.app
 
 A manual Windows x64 GitHub Actions workflow is included in
 .github/workflows/custom-build.yml. It has not been run or verified here.
+
+## macOS scroll direction capture
+
+Scroll forwarding now uses a separate annotated-session event tap, after
+session-level mouse utilities apply direction corrections. Local Mac scrolling
+passes through unchanged. Keyboard, buttons and movement retain the original
+HID tap. If the later tap cannot be created, the previous HID scroll path is
+retained with a warning. Physical trackpad/Logi behavior needs device testing.
