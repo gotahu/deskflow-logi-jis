@@ -13,6 +13,8 @@ class OSXScreenTests : public QObject
   Q_OBJECT
 
 private Q_SLOTS:
+  void trackpadScroll_preservesMouseAndSlowsGestureAndMomentum();
+  void trackpadScroll_preservesSmallSignedDeltas();
   void emergencyReturnKey_acceptsRequiredChord();
   void emergencyReturnKey_acceptsAdditionalModifiers();
   void emergencyReturnKey_rejectsIncompleteOrRepeatedChord();

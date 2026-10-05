@@ -18,6 +18,41 @@ constexpr auto kGestureType = static_cast<CGEventType>(29);
 
 } // namespace
 
+void OSXScreenTests::trackpadScroll_preservesMouseAndSlowsGestureAndMomentum()
+{
+  CGEventRef event = CGEventCreateScrollWheelEvent(nullptr, kCGScrollEventUnitLine, 2, 1, 0);
+  QVERIFY(event != nullptr);
+  int32_t remainder = 0;
+  QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, 120, 25, remainder), 120);
+  CGEventSetIntegerValueField(event, kCGScrollWheelEventIsContinuous, 1);
+  QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, 120, 25, remainder), 120);
+  CGEventSetIntegerValueField(event, kCGScrollWheelEventScrollPhase, 1);
+  QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, 120, 25, remainder), 30);
+  QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, -120, 25, remainder), -30);
+  QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, 120, 100, remainder), 120);
+  CGEventSetIntegerValueField(event, kCGScrollWheelEventScrollPhase, 0);
+  CGEventSetIntegerValueField(event, kCGScrollWheelEventMomentumPhase, 1);
+  QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, 120, 25, remainder), 30);
+  CFRelease(event);
+}
+
+void OSXScreenTests::trackpadScroll_preservesSmallSignedDeltas()
+{
+  CGEventRef event = CGEventCreateScrollWheelEvent(nullptr, kCGScrollEventUnitLine, 1, 1);
+  QVERIFY(event != nullptr);
+  CGEventSetIntegerValueField(event, kCGScrollWheelEventScrollPhase, 1);
+  int32_t remainder = 0;
+  for (int sign : {1, -1}) {
+    int total = 0;
+    for (int i = 0; i < 4; ++i) {
+      total += OSXComputer::scaleTrackpadVerticalScroll(event, sign, 25, remainder);
+    }
+    QCOMPARE(total, sign);
+    QCOMPARE(remainder, 0);
+  }
+  CFRelease(event);
+}
+
 void OSXScreenTests::emergencyReturnKey_acceptsRequiredChord()
 {
   QVERIFY(OSXComputer::isEmergencyReturnKey(kCGEventKeyDown, kVK_Escape, kEmergencyModifiers, false));

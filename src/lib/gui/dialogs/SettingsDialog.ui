@@ -805,6 +805,14 @@
         </widget>
        </item>
        <item>
+        <widget class="QWidget" name="trackpadScrollControls">
+         <layout class="QHBoxLayout" name="trackpadScrollLayout">
+          <item><widget class="QLabel" name="lblTrackpadScroll"><property name="text"><string>Trackpad vertical scroll speed when forwarding</string></property></widget></item>
+          <item><widget class="QSpinBox" name="sbTrackpadScroll"><property name="suffix"><string>%</string></property><property name="minimum"><number>1</number></property><property name="maximum"><number>200</number></property><property name="value"><number>25</number></property><property name="toolTip"><string>100% keeps the previous speed. Applies to trackpad gestures and momentum, not ordinary mouse wheel events.</string></property></widget></item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="cbSwitchToAsciiOnLeave">
          <property name="toolTip">
           <string>Prevents macOS input methods from intercepting keys sent to another computer. The previous input source is restored when returning.</string>

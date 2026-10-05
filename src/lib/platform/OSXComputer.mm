@@ -8,6 +8,8 @@
 
 #include "platform/OSXComputer.h"
 
+#include <algorithm>
+
 #include "arch/Arch.h"
 #include "arch/ArchException.h"
 #include "base/Event.h"
@@ -693,6 +695,8 @@ void OSXComputer::hideCursor()
 
 void OSXComputer::enable()
 {
+  m_trackpadScrollPercent = std::clamp(Settings::value(Settings::Server::MacTrackpadVerticalScrollPercent).toInt(), 1, 200);
+  m_trackpadScrollRemainder = 0;
   // watch the clipboard
   m_clipboardTimer = m_events->newTimer(1.0, nullptr);
   m_events->addHandler(EventTypes::Timer, m_clipboardTimer, [this](const auto &) { checkClipboards(); });
@@ -1845,6 +1849,32 @@ OSXComputer::handleCGInputEventSecondary(CGEventTapProxy proxy, CGEventType type
   return event;
 }
 
+int32_t OSXComputer::scaleTrackpadVerticalScroll(CGEventRef event, int32_t delta, int percent, int32_t &remainder)
+{
+  // Continuous alone also describes smoothed mouse wheels. Gesture/momentum
+  // phases distinguish trackpad scrolls without slowing those wheels.
+  if (CGEventGetType(event) != kCGEventScrollWheel ||
+      (CGEventGetIntegerValueField(event, kCGScrollWheelEventScrollPhase) == 0 &&
+       CGEventGetIntegerValueField(event, kCGScrollWheelEventMomentumPhase) == 0)) {
+    return delta;
+  }
+  const int64_t scaled = static_cast<int64_t>(delta) * std::clamp(percent, 1, 200) + remainder;
+  remainder = static_cast<int32_t>(scaled % 100);
+  return static_cast<int32_t>(scaled / 100);
+}
+
+void OSXComputer::forwardScrollEvent(CGEventRef event)
+{
+  const auto x = mapScrollWheelToDeskflow(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis2));
+  const auto y = scaleTrackpadVerticalScroll(
+      event, mapScrollWheelToDeskflow(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis1)),
+      m_trackpadScrollPercent, m_trackpadScrollRemainder
+  );
+  if (x != 0 || y != 0) {
+    onMouseWheel(x, y);
+  }
+}
+
 CGEventRef OSXComputer::handleCGScrollEvent(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon)
 {
   auto *computer = static_cast<OSXComputer *>(refcon);
@@ -1857,10 +1887,7 @@ CGEventRef OSXComputer::handleCGScrollEvent(CGEventTapProxy proxy, CGEventType t
   if (type != kCGEventScrollWheel || computer->m_isOnComputer) {
     return event;
   }
-  computer->onMouseWheel(
-      computer->mapScrollWheelToDeskflow(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis2)),
-      computer->mapScrollWheelToDeskflow(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis1))
-  );
+  computer->forwardScrollEvent(event);
   return nullptr;
 }
 
@@ -1893,10 +1920,7 @@ CGEventRef OSXComputer::handleCGInputEvent(CGEventTapProxy proxy, CGEventType ty
     if (computer->m_scrollTapPort) {
       return event;
     }
-    computer->onMouseWheel(
-        computer->mapScrollWheelToDeskflow(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis2)),
-        computer->mapScrollWheelToDeskflow(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis1))
-    );
+    computer->forwardScrollEvent(event);
     break;
   case kCGEventKeyDown: {
     const auto keyCode = static_cast<CGKeyCode>(CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode));

@@ -126,6 +126,7 @@ public:
     inline static const auto RelativeMouseMoves = QStringLiteral("server/relativeMouseMoves");
     inline static const auto SwitchDelay = QStringLiteral("server/switchDelay");
     inline static const auto SwitchDoubleTap = QStringLiteral("server/switchDoubleTap");
+    inline static const auto MacTrackpadVerticalScrollPercent = QStringLiteral("server/macTrackpadVerticalScrollPercent");
     inline static const auto SwitchToAsciiOnLeave = QStringLiteral("server/switchToAsciiOnLeave");
     inline static const auto Win32KeepForeground = QStringLiteral("server/win32KeepForeground");
     inline static const auto XdpClipboardRetried = QStringLiteral("server/xdpClipboardRetried");
@@ -350,6 +351,7 @@ private:
     , Server::RelativeMouseMoves
     , Server::SwitchDelay
     , Server::SwitchDoubleTap
+    , Server::MacTrackpadVerticalScrollPercent
     , Server::SwitchToAsciiOnLeave
     , Server::Win32KeepForeground
   };

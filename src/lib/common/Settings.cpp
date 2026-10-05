@@ -358,6 +358,9 @@ QVariant Settings::defaultValue(const QString &key)
   if (key == Client::YScrollScale || key == Client::XScrollScale)
     return 1.0;
 
+  if (key == Server::MacTrackpadVerticalScrollPercent)
+    return 25;
+
   if (key == Server::MacNavigationGestureAction1)
     return static_cast<int>(NavigationGestureDirection::Left);
 

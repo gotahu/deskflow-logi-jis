@@ -140,6 +140,7 @@ void SettingsDialog::initConnections() const
   connect(ui->lineTlsCertPath, &QLineEdit::textChanged, this, &SettingsDialog::setButtonBoxEnabledButtons);
   connect(ui->cbRunEnterCommand, &QCheckBox::toggled, this, &SettingsDialog::setButtonBoxEnabledButtons);
   connect(ui->cbRunExitCommand, &QCheckBox::toggled, this, &SettingsDialog::setButtonBoxEnabledButtons);
+  connect(ui->sbTrackpadScroll, &QSpinBox::valueChanged, this, &SettingsDialog::setButtonBoxEnabledButtons);
   connect(ui->cbSwitchToAsciiOnLeave, &QCheckBox::toggled, this, &SettingsDialog::setButtonBoxEnabledButtons);
   connect(ui->lineCommandEnter, &QLineEdit::textChanged, this, &SettingsDialog::setButtonBoxEnabledButtons);
   connect(ui->lineCommandExit, &QLineEdit::textChanged, this, &SettingsDialog::setButtonBoxEnabledButtons);
@@ -243,6 +244,7 @@ void SettingsDialog::accept()
   Settings::setValue(Settings::Core::EnableExitCommand, ui->cbRunExitCommand->isChecked());
   Settings::setValue(Settings::Core::ComputerEnterCommand, ui->lineCommandEnter->text());
   Settings::setValue(Settings::Core::ComputerExitCommand, ui->lineCommandExit->text());
+  Settings::setValue(Settings::Server::MacTrackpadVerticalScrollPercent, ui->sbTrackpadScroll->value());
   Settings::setValue(Settings::Server::SwitchToAsciiOnLeave, ui->cbSwitchToAsciiOnLeave->isChecked());
 
   Settings::ProcessMode mode;
@@ -272,6 +274,8 @@ void SettingsDialog::loadFromConfig()
   ui->cbRunExitCommand->setChecked(Settings::value(Settings::Core::EnableExitCommand).toBool());
   ui->lineCommandEnter->setText(Settings::value(Settings::Core::ComputerEnterCommand).toString());
   ui->lineCommandExit->setText(Settings::value(Settings::Core::ComputerExitCommand).toString());
+  ui->sbTrackpadScroll->setValue(Settings::value(Settings::Server::MacTrackpadVerticalScrollPercent).toInt());
+  ui->trackpadScrollControls->setVisible(deskflow::platform::isMac());
   ui->cbSwitchToAsciiOnLeave->setChecked(Settings::value(Settings::Server::SwitchToAsciiOnLeave).toBool());
   ui->cbSwitchToAsciiOnLeave->setVisible(deskflow::platform::isMac());
   ui->lblEmergencyReturnShortcut->setVisible(deskflow::platform::isMac());
@@ -395,6 +399,7 @@ void SettingsDialog::updateControls()
   ui->cbRunExitCommand->setEnabled(writable);
   ui->lineCommandEnter->setEnabled(writable && ui->cbRunEnterCommand->isChecked());
   ui->lineCommandExit->setEnabled(writable && ui->cbRunExitCommand->isChecked());
+  ui->trackpadScrollControls->setEnabled(writable && !isClientMode());
   ui->cbSwitchToAsciiOnLeave->setEnabled(writable && !isClientMode());
 
   // Portable mode only ever applies to Windows.
@@ -450,6 +455,7 @@ bool SettingsDialog::isModified() const
       (ui->cbRunExitCommand->isChecked() != Settings::value(Settings::Core::EnableExitCommand).toBool()) ||
       (ui->lineCommandEnter->text() != Settings::value(Settings::Core::ComputerEnterCommand).toString()) ||
       (ui->lineCommandExit->text() != Settings::value(Settings::Core::ComputerExitCommand).toString()) ||
+      (ui->sbTrackpadScroll->value() != Settings::value(Settings::Server::MacTrackpadVerticalScrollPercent).toInt()) ||
       (ui->cbSwitchToAsciiOnLeave->isChecked() != Settings::value(Settings::Server::SwitchToAsciiOnLeave).toBool()) ||
       (I18N::nativeTo639Name(ui->comboLanguage->currentText()) != Settings::value(Settings::Core::Language).toString());
 
@@ -487,6 +493,7 @@ bool SettingsDialog::isDefault() const
       (ui->lineCommandExit->text() == Settings::defaultValue(Settings::Core::ComputerExitCommand).toString()) &&
       (ui->cbRunEnterCommand->isChecked() == Settings::defaultValue(Settings::Core::EnableEnterCommand).toBool()) &&
       (ui->cbRunExitCommand->isChecked() == Settings::defaultValue(Settings::Core::EnableExitCommand).toBool()) &&
+      (ui->sbTrackpadScroll->value() == Settings::defaultValue(Settings::Server::MacTrackpadVerticalScrollPercent).toInt()) &&
       (ui->cbSwitchToAsciiOnLeave->isChecked() ==
        Settings::defaultValue(Settings::Server::SwitchToAsciiOnLeave).toBool()) &&
       (ui->comboLanguage->currentText() == "English")
@@ -510,6 +517,7 @@ void SettingsDialog::resetToDefault()
   ui->cbRunExitCommand->setChecked(Settings::defaultValue(Settings::Core::EnableExitCommand).toBool());
   ui->lineCommandEnter->setText(Settings::defaultValue(Settings::Core::ComputerEnterCommand).toString());
   ui->lineCommandExit->setText(Settings::defaultValue(Settings::Core::ComputerExitCommand).toString());
+  ui->sbTrackpadScroll->setValue(Settings::defaultValue(Settings::Server::MacTrackpadVerticalScrollPercent).toInt());
   ui->cbSwitchToAsciiOnLeave->setChecked(Settings::defaultValue(Settings::Server::SwitchToAsciiOnLeave).toBool());
 
   const auto autoHide = Settings::defaultValue(Settings::Gui::Autohide).toBool();

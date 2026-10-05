@@ -77,3 +77,13 @@ session-level mouse utilities apply direction corrections. Local Mac scrolling
 passes through unchanged. Keyboard, buttons and movement retain the original
 HID tap. If the later tap cannot be created, the previous HID scroll path is
 retained with a warning. Physical trackpad/Logi behavior needs device testing.
+
+## Trackpad vertical scroll speed
+
+Mac Settings > Advanced includes Trackpad vertical scroll speed when forwarding.
+The default is 25%; 100% retains the previous speed. This applies only to events
+with scroll or momentum phases. Continuous wheel events without gesture phases
+keep the existing mouse speed. Horizontal and local scrolling are unchanged.
+Fractional scaled deltas accumulate to preserve slow, small movements.
+Some third-party drivers may attach gesture phases to wheel events; device
+classification and the preferred percentage still require a physical test.
