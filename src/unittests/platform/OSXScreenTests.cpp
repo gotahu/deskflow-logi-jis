@@ -24,15 +24,19 @@ void OSXScreenTests::trackpadScroll_preservesMouseAndSlowsGestureAndMomentum()
   QVERIFY(event != nullptr);
   int32_t remainder = 0;
   QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, 120, 25, remainder), 120);
+  QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, 120, 25, remainder, true), 120);
   CGEventSetIntegerValueField(event, kCGScrollWheelEventIsContinuous, 1);
   QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, 120, 25, remainder), 120);
   CGEventSetIntegerValueField(event, kCGScrollWheelEventScrollPhase, 1);
   QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, 120, 25, remainder), 30);
   QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, -120, 25, remainder), -30);
   QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, 120, 100, remainder), 120);
+  QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, 120, 25, remainder, true), -30);
+  QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, -120, 25, remainder, true), 30);
   CGEventSetIntegerValueField(event, kCGScrollWheelEventScrollPhase, 0);
   CGEventSetIntegerValueField(event, kCGScrollWheelEventMomentumPhase, 1);
   QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, 120, 25, remainder), 30);
+  QCOMPARE(OSXComputer::scaleTrackpadVerticalScroll(event, 120, 25, remainder, true), -30);
   CFRelease(event);
 }
 

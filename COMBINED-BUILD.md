@@ -87,3 +87,8 @@ keep the existing mouse speed. Horizontal and local scrolling are unchanged.
 Fractional scaled deltas accumulate to preserve slow, small movements.
 Some third-party drivers may attach gesture phases to wheel events; device
 classification and the preferred percentage still require a physical test.
+
+Trackpad vertical direction can also be reversed independently in the Mac
+Advanced settings. This custom build defaults the checkbox to ON to compensate
+for the reported trackpad/wheel mismatch while retaining the client's existing
+Invert setting. Disable it if no compensation is needed in your setup.

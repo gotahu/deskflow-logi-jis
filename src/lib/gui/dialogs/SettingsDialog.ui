@@ -809,6 +809,7 @@
          <layout class="QHBoxLayout" name="trackpadScrollLayout">
           <item><widget class="QLabel" name="lblTrackpadScroll"><property name="text"><string>Trackpad vertical scroll speed when forwarding</string></property></widget></item>
           <item><widget class="QSpinBox" name="sbTrackpadScroll"><property name="suffix"><string>%</string></property><property name="minimum"><number>1</number></property><property name="maximum"><number>200</number></property><property name="value"><number>25</number></property><property name="toolTip"><string>100% keeps the previous speed. Applies to trackpad gestures and momentum, not ordinary mouse wheel events.</string></property></widget></item>
+          <item><widget class="QCheckBox" name="cbTrackpadInvertY"><property name="text"><string>Reverse trackpad vertical direction</string></property><property name="toolTip"><string>Only reverses trackpad scrolling sent to another computer. Mouse wheels and local Mac scrolling are unchanged.</string></property></widget></item>
          </layout>
         </widget>
        </item>

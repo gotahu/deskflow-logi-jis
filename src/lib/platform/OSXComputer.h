@@ -162,7 +162,7 @@ private:
   void handleConfirmSleep(const Event &event);
 
   bool checkAXPermissions();
-  static int32_t scaleTrackpadVerticalScroll(CGEventRef event, int32_t delta, int percent, int32_t &remainder);
+  static int32_t scaleTrackpadVerticalScroll(CGEventRef event, int32_t delta, int percent, int32_t &remainder, bool invert = false);
   static bool isEmergencyReturnKey(CGEventType type, CGKeyCode keyCode, CGEventFlags flags, bool isAutoRepeat);
   static bool shouldEnforceAsciiInputSource(bool isPrimary, bool isOnScreen, bool settingEnabled);
   static KeyModifierMask
@@ -326,6 +326,7 @@ private:
 
   // Quartz input event support
   void forwardScrollEvent(CGEventRef event);
+  bool m_trackpadInvertYScroll = true;
   int m_trackpadScrollPercent = 25;
   int32_t m_trackpadScrollRemainder = 0;
   static CGEventRef handleCGScrollEvent(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon);

@@ -695,6 +695,7 @@ void OSXComputer::hideCursor()
 
 void OSXComputer::enable()
 {
+  m_trackpadInvertYScroll = Settings::value(Settings::Server::MacTrackpadInvertYScroll).toBool();
   m_trackpadScrollPercent = std::clamp(Settings::value(Settings::Server::MacTrackpadVerticalScrollPercent).toInt(), 1, 200);
   m_trackpadScrollRemainder = 0;
   // watch the clipboard
@@ -1849,7 +1850,7 @@ OSXComputer::handleCGInputEventSecondary(CGEventTapProxy proxy, CGEventType type
   return event;
 }
 
-int32_t OSXComputer::scaleTrackpadVerticalScroll(CGEventRef event, int32_t delta, int percent, int32_t &remainder)
+int32_t OSXComputer::scaleTrackpadVerticalScroll(CGEventRef event, int32_t delta, int percent, int32_t &remainder, bool invert)
 {
   // Continuous alone also describes smoothed mouse wheels. Gesture/momentum
   // phases distinguish trackpad scrolls without slowing those wheels.
@@ -1858,7 +1859,7 @@ int32_t OSXComputer::scaleTrackpadVerticalScroll(CGEventRef event, int32_t delta
        CGEventGetIntegerValueField(event, kCGScrollWheelEventMomentumPhase) == 0)) {
     return delta;
   }
-  const int64_t scaled = static_cast<int64_t>(delta) * std::clamp(percent, 1, 200) + remainder;
+  const int64_t scaled = static_cast<int64_t>(delta) * std::clamp(percent, 1, 200) * (invert ? -1 : 1) + remainder;
   remainder = static_cast<int32_t>(scaled % 100);
   return static_cast<int32_t>(scaled / 100);
 }
@@ -1868,7 +1869,7 @@ void OSXComputer::forwardScrollEvent(CGEventRef event)
   const auto x = mapScrollWheelToDeskflow(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis2));
   const auto y = scaleTrackpadVerticalScroll(
       event, mapScrollWheelToDeskflow(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis1)),
-      m_trackpadScrollPercent, m_trackpadScrollRemainder
+      m_trackpadScrollPercent, m_trackpadScrollRemainder, m_trackpadInvertYScroll
   );
   if (x != 0 || y != 0) {
     onMouseWheel(x, y);
