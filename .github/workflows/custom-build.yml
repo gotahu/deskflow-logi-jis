@@ -28,8 +28,8 @@ jobs:
           ${{ steps.deps.outputs.vcpkg-cmake-config }}
       - name: Build
         run: cmake --build build --parallel 4
-      - name: Test synthetic arrow normalization
-        run: ctest --test-dir build/src/unittests -R '^MSWindowsSyntheticKeyTests$' --output-on-failure
+      - name: Test protocol negotiation and synthetic arrows
+        run: ctest --test-dir build/src/unittests -R '^(ServerProxyTests|MSWindowsSyntheticKeyTests)$' --output-on-failure
       - name: Package portable build
         run: cpack --config build/CPackConfig.cmake -G 7Z -B build
       - uses: actions/upload-artifact@v4

@@ -10,6 +10,8 @@
 #include "base/IEventQueue.h"
 #include "client/Client.h"
 #include "client/ServerProxy.h"
+#include "client/ServerProxy1_8.h"
+#include <memory>
 #include "deskflow/AppUtil.h"
 #include "deskflow/ProtocolTypes.h"
 #include "io/IStream.h"
@@ -272,6 +274,31 @@ void ServerProxyTests::initTestCase()
 {
   (void)testAppUtil();
   m_log.setFilter(LogLevel::Level::Debug);
+}
+
+void ServerProxyTests::createForProtocol_negotiatedVersion_data()
+{
+  QTest::addColumn<int>("minor");
+  QTest::addColumn<bool>("supported");
+  QTest::newRow("legacy-unsupported") << 5 << false;
+  QTest::newRow("1.6") << 6 << true;
+  QTest::newRow("1.7") << 7 << true;
+  QTest::newRow("1.8") << 8 << true;
+  QTest::newRow("combined-1.9") << static_cast<int>(kProtocolMinorVersion) << true;
+  QTest::newRow("future-unsupported") << 10 << false;
+}
+
+void ServerProxyTests::createForProtocol_negotiatedVersion()
+{
+  QFETCH(int, minor);
+  QFETCH(bool, supported);
+  RecordingEventQueue events;
+  FakeStream stream;
+  std::unique_ptr<ServerProxy> proxy(ServerProxy::createForProtocol(minor, undereferenceableClient(), &stream, &events));
+  QCOMPARE(proxy != nullptr, supported);
+  if (minor == 8 || minor == 9) {
+    QVERIFY(dynamic_cast<ServerProxy1_8 *>(proxy.get()) != nullptr);
+  }
 }
 
 void ServerProxyTests::handleKeepAliveAlarm_timeout_queuesDisconnectRequest()

@@ -12,8 +12,6 @@
 #include "base/IEventQueue.h"
 #include "base/Log.h"
 #include "client/ServerProxy.h"
-#include "client/ServerProxy1_7.h"
-#include "client/ServerProxy1_8.h"
 #include "common/NetworkProtocol.h"
 #include "common/Settings.h"
 #include "deskflow/Clipboard.h"
@@ -475,22 +473,7 @@ bool Client::setupComputer(int16_t protocolMinor)
 
   m_ready = false;
 
-  // only 1.6 and later have a proxy: the clipboard, mouse wheel and key message formats
-  // differ below that, and nothing older (synergy 1.4 and earlier) still needs supporting.
-  // a version with no case is refused by the hello handler.
-  switch (protocolMinor) {
-  case 6:
-    m_server = new ServerProxy(this, m_stream, m_events);
-    break;
-  case 7:
-    m_server = new ServerProxy1_7(this, m_stream, m_events);
-    break;
-  case 8:
-    m_server = new ServerProxy1_8(this, m_stream, m_events);
-    break;
-  default:
-    break;
-  }
+  m_server = ServerProxy::createForProtocol(protocolMinor, this, m_stream, m_events);
 
   if (m_server != nullptr) {
     m_events->addHandler(EventTypes::ComputerShapeChanged, getEventTarget(), [this](const auto &) {

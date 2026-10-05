@@ -7,6 +7,8 @@
  */
 
 #include "client/ServerProxy.h"
+#include "client/ServerProxy1_7.h"
+#include "client/ServerProxy1_8.h"
 
 #include "base/IEventQueue.h"
 #include "base/Log.h"
@@ -25,6 +27,23 @@
 //
 // ServerProxy
 //
+
+ServerProxy *ServerProxy::createForProtocol(int16_t minor, Client *client, deskflow::IStream *stream, IEventQueue *events)
+{
+  switch (minor) {
+  case 6:
+    return new ServerProxy(client, stream, events);
+  case 7:
+    return new ServerProxy1_7(client, stream, events);
+  case 8:
+  case 9:
+    // 1.9 retains the 1.8 layouts and key format. Its added navigation
+    // message is handled by ServerProxy::parseMessage.
+    return new ServerProxy1_8(client, stream, events);
+  default:
+    return nullptr;
+  }
+}
 
 ServerProxy::ServerProxy(Client *client, deskflow::IStream *stream, IEventQueue *events)
     : m_client(client),

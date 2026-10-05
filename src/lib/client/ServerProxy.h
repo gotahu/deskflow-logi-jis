@@ -45,6 +45,9 @@ public:
   ServerProxy &operator=(ServerProxy const &) = delete;
   ServerProxy &operator=(ServerProxy &&) = delete;
 
+  // Caller owns the returned proxy; unsupported versions return nullptr.
+  static ServerProxy *createForProtocol(int16_t minor, Client *client, deskflow::IStream *stream, IEventQueue *events);
+
   //! @name manipulators
   //@{
 
