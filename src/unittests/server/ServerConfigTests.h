@@ -6,6 +6,8 @@
  */
 
 #include <QTest>
+#include "arch/Arch.h"
+#include "base/Log.h"
 
 class ServerConfigTests : public QObject
 {
@@ -13,12 +15,15 @@ class ServerConfigTests : public QObject
 private Q_SLOTS:
   void equalityCheck();
   void equalityCheck_diff_options();
-  void streamOutput_macNavigationGesturesEnabled_serializesTrue();
-  void streamOutput_macNavigationGestureMappings_serializeDirections();
+  void initTestCase();
+  void navigationOptions_loadFromSettings();
   void equalityCheck_diff_alias();
   void equalityCheck_diff_filters();
   //  void equalityCheck_diff_address();
   void equalityCheck_diff_neighbours1();
   void equalityCheck_diff_neighbours2();
   void equalityCheck_diff_neighbours3();
+private:
+  Arch m_arch;
+  Log m_log;
 };

@@ -11,6 +11,9 @@
 #include "server/Config.h"
 
 #include <sstream>
+#include <QTemporaryDir>
+#include <QScopeGuard>
+#include "common/Settings.h"
 
 class OnlySystemFilter : public InputFilter::Condition
 {
@@ -83,28 +86,31 @@ void ServerConfigTests::equalityCheck_diff_options()
   QVERIFY(a != b);
 }
 
-void ServerConfigTests::streamOutput_macNavigationGesturesEnabled_serializesTrue()
+void ServerConfigTests::initTestCase()
 {
-  Config config(nullptr);
-  QVERIFY(config.addOption("", kOptionMacNavigationGestures, 1));
-
-  std::ostringstream stream;
-  stream << config;
-
-  QVERIFY(QString::fromStdString(stream.str()).contains(QStringLiteral("macNavigationGestures = true")));
+  m_arch.init();
 }
 
-void ServerConfigTests::streamOutput_macNavigationGestureMappings_serializeDirections()
+void ServerConfigTests::navigationOptions_loadFromSettings()
 {
-  Config config(nullptr);
-  QVERIFY(config.addOption("", kOptionMacNavigationGestureAction1, 3));
-  QVERIFY(config.addOption("", kOptionMacNavigationGestureAction2, 4));
-
-  std::ostringstream stream;
-  stream << config;
-  const auto output = QString::fromStdString(stream.str());
-  QVERIFY(output.contains(QStringLiteral("macNavigationGestureAction1 = 3")));
-  QVERIFY(output.contains(QStringLiteral("macNavigationGestureAction2 = 4")));
+  QTemporaryDir directory;
+  QVERIFY(directory.isValid());
+  const auto oldFile = Settings::settingsFile();
+  const auto restore = qScopeGuard([oldFile] { Settings::setSettingsFile(oldFile); });
+  Settings::setSettingsFile(directory.filePath("Deskflow.conf"));
+  Settings::setValue(Settings::Server::MacNavigationGestureAction1, 3);
+  Settings::setValue(Settings::Server::MacNavigationGestureAction2, 4);
+  for (const auto enabled : {false, true}) {
+    Settings::setValue(Settings::Server::MacNavigationGesturesEnabled, enabled);
+    Config config(nullptr);
+    std::istringstream stream("section: links\nend\nsection: options\nend\n");
+    stream >> config;
+    const auto *options = config.getOptions("");
+    QVERIFY(options != nullptr);
+    QCOMPARE(options->at(kOptionMacNavigationGestures), OptionValue(enabled));
+    QCOMPARE(options->at(kOptionMacNavigationGestureAction1), OptionValue{3});
+    QCOMPARE(options->at(kOptionMacNavigationGestureAction2), OptionValue{4});
+  }
 }
 
 void ServerConfigTests::equalityCheck_diff_alias()
