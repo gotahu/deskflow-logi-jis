@@ -1,5 +1,14 @@
-# SPDX-FileCopyrightText: (C) 2025 Deskflow Developers
+# SPDX-FileCopyrightText: (C) 2025 - 2026 Deskflow Developers
 # SPDX-License-Identifier: MIT
+
+# This Windows input normalization is pure code and can also run on macOS.
+create_test(
+  NAME MSWindowsSyntheticKeyTests
+  DEPENDS platform
+  LIBS base arch
+  SOURCE MSWindowsSyntheticKeyTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/platform"
+)
 
 if (WIN32)
   create_test(
@@ -18,10 +27,24 @@ elseif(APPLE)
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/platform"
   )
   create_test(
+    NAME OSXKeyCalibrationTests
+    DEPENDS platform
+    LIBS base arch
+    SOURCE OSXKeyCalibrationTests.cpp
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/platform"
+  )
+  create_test(
     NAME OSXKeyStateTests
     DEPENDS platform
     LIBS base arch
     SOURCE OSXKeyStateTests.cpp
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/platform"
+  )
+  create_test(
+    NAME OSXScreenTests
+    DEPENDS platform
+    LIBS base arch
+    SOURCE OSXScreenTests.cpp
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/platform"
   )
 elseif(UNIX)

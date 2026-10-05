@@ -47,6 +47,7 @@ if(WIN32)
     MSWindowsEventQueueBuffer.h
     MSWindowsHook.cpp
     MSWindowsHook.h
+    MSWindowsSyntheticKey.h
     MSWindowsKeyState.cpp
     MSWindowsKeyState.h
     MSWindowsPowerManager.cpp
@@ -89,6 +90,8 @@ elseif(APPLE)
     OSXEventQueueBuffer.h
     OSXKeyLayoutResource.cpp
     OSXKeyLayoutResource.h
+    OSXKeyCalibration.h
+    OSXKeyCalibration.mm
     OSXKeyState.cpp
     OSXKeyState.h
     OSXMediaKeySupport.h

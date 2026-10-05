@@ -1,5 +1,6 @@
 /*
  * Deskflow -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2026 Deskflow Developers
  * SPDX-FileCopyrightText: (C) 2025 Chris Rizzitello <sithlord48@gmail.com>
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Synergy App Ltd
  * SPDX-FileCopyrightText: (C) 2011 Nick Bolton
@@ -9,6 +10,8 @@
 #include "OSXKeyStateTests.h"
 
 #include "base/EventQueue.h"
+#include <IOKit/hidsystem/IOHIDLib.h>
+#include <tuple>
 
 #define SHIFT_ID_L kKeyShift_L
 #define SHIFT_ID_R kKeyShift_R
@@ -53,6 +56,72 @@ void OSXKeyStateTests::mapModifiersFromOSX_OSXMask()
   uint32_t numMask = 0 | kCGEventFlagMaskNumericPad;
   outMask = keyState.mapModifiersFromOSX(numMask);
   QCOMPARE(outMask, KeyModifierNumLock);
+}
+
+void OSXKeyStateTests::adjustModifiersForRemoteCapsLock_disabled_preservesModifiers()
+{
+  const auto modifiers = static_cast<uint32_t>(shiftKey | alphaLock);
+
+  const auto adjusted = OSXKeyState::adjustModifiersForRemoteCapsLock(modifiers, 0, false);
+
+  QCOMPARE(adjusted, modifiers);
+}
+
+void OSXKeyStateTests::adjustModifiersForRemoteCapsLock_enabledAndActive_addsCapsLock()
+{
+  const auto modifiers = static_cast<uint32_t>(shiftKey | optionKey);
+
+  const auto adjusted =
+      OSXKeyState::adjustModifiersForRemoteCapsLock(modifiers, KeyModifierCapsLock, true);
+
+  QCOMPARE(adjusted, static_cast<uint32_t>(modifiers | alphaLock));
+}
+
+void OSXKeyStateTests::adjustModifiersForRemoteCapsLock_enabledAndInactive_removesCapsLock()
+{
+  const auto modifiers = static_cast<uint32_t>(shiftKey | optionKey | alphaLock);
+
+  const auto adjusted = OSXKeyState::adjustModifiersForRemoteCapsLock(modifiers, 0, true);
+
+  QCOMPARE(adjusted, static_cast<uint32_t>(shiftKey | optionKey));
+}
+
+void OSXKeyStateTests::jisImeKeysMapToNativeKeys()
+{
+  deskflow::KeyMap keyMap;
+  EventQueue eventQueue;
+  OSXKeyState keyState(&eventQueue, keyMap, {"en"}, true);
+  keyState.getKeyMapForSpecialKeys(keyMap, 0);
+  keyMap.finish();
+  for (const auto &[id, nativeKey] : std::vector<std::pair<KeyID, uint32_t>>{
+           {kKeyMuhenkan, kVK_JIS_Eisu}, {kKeyEisuToggle, kVK_JIS_Eisu},
+           {kKeyHenkan, kVK_JIS_Kana}, {kKeyKana, kVK_JIS_Kana}}) {
+    const auto *items = keyMap.findCompatibleKey(id, 0, 0, 0);
+    QVERIFY(items != nullptr);
+    QVERIFY(!items->empty());
+    QCOMPARE(items->front().m_button, static_cast<KeyButton>(nativeKey + 1));
+  }
+}
+
+void OSXKeyStateTests::bothModifierSidesRemainPressed()
+{
+  deskflow::KeyMap keyMap;
+  EventQueue eventQueue;
+  OSXKeyState keyState(&eventQueue, keyMap, {"en"}, true);
+  for (const auto &[left, right, flag] : std::vector<std::tuple<CGKeyCode, CGKeyCode, CGEventFlags>>{
+           {kVK_Shift, kVK_RightShift, kCGEventFlagMaskShift},
+           {kVK_Control, kVK_RightControl, kCGEventFlagMaskControl},
+           {kVK_Option, kVK_RightOption, kCGEventFlagMaskAlternate},
+           {kVK_Command, kVK_RightCommand, kCGEventFlagMaskCommand}}) {
+    keyState.setKeyboardModifiers(left, true);
+    keyState.setKeyboardModifiers(right, true);
+    keyState.setKeyboardModifiers(left, false);
+    QVERIFY((keyState.getKeyboardEventFlags() & flag) != 0);
+    QVERIFY(keyState.getDeviceDependedFlags() != 0);
+    keyState.setKeyboardModifiers(right, false);
+    QVERIFY((keyState.getKeyboardEventFlags() & flag) == 0);
+    QCOMPARE(keyState.getDeviceDependedFlags(), CGEventFlags{0});
+  }
 }
 
 void OSXKeyStateTests::fakePollShift()

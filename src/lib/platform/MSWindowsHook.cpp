@@ -6,6 +6,7 @@
  */
 
 #include "platform/MSWindowsHook.h"
+#include "platform/MSWindowsSyntheticKey.h"
 #include "base/DirectionTypes.h"
 #include "base/Log.h"
 #include "deskflow/DisplayException.h"
@@ -459,10 +460,10 @@ static LRESULT CALLBACK keyboardLLHook(int code, WPARAM wParam, LPARAM lParam)
 
     WPARAM wParam = info->vkCode;
     LPARAM lParam = 1;                // repeat code
-    lParam |= (info->scanCode << 16); // scan code
-    if (info->flags & LLKHF_EXTENDED) {
-      lParam |= (1lu << 24); // extended key
-    }
+    const auto scanCode = deskflow::normalizeInjectedArrowScanCode(
+        info->vkCode, info->scanCode, (info->flags & LLKHF_EXTENDED) != 0, injected
+    );
+    lParam |= (static_cast<LPARAM>(scanCode) << 16); // scan code and extended bit
     if (info->flags & LLKHF_ALTDOWN) {
       lParam |= (1lu << 29); // context code
     }

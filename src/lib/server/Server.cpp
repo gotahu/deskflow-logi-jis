@@ -80,6 +80,10 @@ Server::Server(ServerConfig &config, PrimaryClient *primaryClient, deskflow::Com
     handleButtonUpEvent(e);
   });
   m_events->addHandler(
+      EventTypes::PrimaryComputerNavigationGesture, m_primaryClient->getEventTarget(),
+      [this](const auto &e) { handleNavigationGestureEvent(e); }
+  );
+  m_events->addHandler(
       EventTypes::PrimaryComputerMotionOnPrimary, m_primaryClient->getEventTarget(),
       [this](const auto &e) { handleMotionPrimaryEvent(e); }
   );
@@ -106,6 +110,9 @@ Server::Server(ServerConfig &config, PrimaryClient *primaryClient, deskflow::Com
   });
   m_events->addHandler(EventTypes::ServerToggleComputer, m_inputFilter, [this](const auto &e) {
     handleToggleComputerEvent(e);
+  });
+  m_events->addHandler(EventTypes::ServerReturnToPrimary, m_primaryClient->getEventTarget(), [this](const auto &) {
+    handleReturnToPrimaryEvent();
   });
   m_events->addHandler(EventTypes::ServerKeyboardBroadcast, m_inputFilter, [this](const auto &e) {
     handleKeyboardBroadcastEvent(e);
@@ -166,6 +173,8 @@ Server::~Server()
   m_events->removeHandler(PrimaryScreenSaverDeactivated, m_primaryClient->getEventTarget());
   m_events->removeHandler(PrimaryComputerFakeInputBegin, m_inputFilter);
   m_events->removeHandler(PrimaryComputerFakeInputEnd, m_inputFilter);
+  m_events->removeHandler(PrimaryComputerNavigationGesture, m_primaryClient->getEventTarget());
+  m_events->removeHandler(ServerReturnToPrimary, m_primaryClient->getEventTarget());
   m_events->removeHandler(Timer, this);
   stopSwitch();
 
@@ -1255,6 +1264,12 @@ void Server::handleButtonUpEvent(const Event &event)
   onMouseUp(info->m_button);
 }
 
+void Server::handleNavigationGestureEvent(const Event &event)
+{
+  const auto *info = static_cast<IPlatformComputer::NavigationGestureInfo *>(event.getData());
+  onNavigationGesture(info->m_action);
+}
+
 void Server::handleMotionPrimaryEvent(const Event &event)
 {
   const auto *info = static_cast<IPlatformComputer::MotionInfo *>(event.getData());
@@ -1370,6 +1385,19 @@ void Server::handleToggleComputerEvent(const Event &)
   }
 
   jumpToComputer(clientIt->second);
+}
+
+void Server::handleReturnToPrimaryEvent()
+{
+  if (m_active == m_primaryClient) {
+    return;
+  }
+
+  int32_t x;
+  int32_t y;
+  m_primaryClient->getCursorCenter(x, y);
+  LOG_WARN("emergency return to primary screen requested");
+  switchComputer(m_primaryClient, x, y, false);
 }
 
 void Server::handleKeyboardBroadcastEvent(const Event &event)
@@ -1606,6 +1634,14 @@ void Server::onMouseUp(ButtonID id)
 
   // relay
   m_active->mouseUp(id);
+}
+
+void Server::onNavigationGesture(NavigationActionSlot action)
+{
+  LOG_VERBOSE("onNavigationGesture action=%d", static_cast<int>(action));
+  assert(m_active != nullptr);
+
+  m_active->navigationGesture(action);
 }
 
 bool Server::onMouseMovePrimary(int32_t x, int32_t y)

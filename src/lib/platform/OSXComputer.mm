@@ -26,6 +26,7 @@
 #include "mt/Lock.h"
 #include "mt/Mutex.h"
 #include "mt/Thread.h"
+#include "platform/OSXAutoTypes.h"
 #include "platform/OSXClipboard.h"
 #include "platform/OSXEventQueueBuffer.h"
 #include "platform/OSXKeyState.h"
@@ -60,6 +61,7 @@ enum
 };
 
 static const double kCarbonLoopWaitTimeout = 10.0;
+static constexpr auto kNavigationGestureEventType = static_cast<CGEventType>(NSEventTypeGesture);
 
 // Synthetic mouse button and drag events require event numbers on macOS 27 and later.
 static inline bool needsEventNumber()
@@ -795,6 +797,8 @@ void OSXComputer::enter()
   showCursor();
 
   if (m_isPrimary) {
+    restoreInputSource();
+
     // re-couple the mouse to the cursor, undoing the capture from leave()
     CGAssociateMouseAndMouseCursorPosition(true);
     setZeroSuppressionInterval();
@@ -829,10 +833,117 @@ void OSXComputer::leave()
     // a client (onMouseMove reads raw deltas instead). must follow hideCursor(),
     // which re-associates. re-coupled in enter()/disable().
     CGAssociateMouseAndMouseCursorPosition(false);
+
+    if (Settings::value(Settings::Server::SwitchToAsciiOnLeave).toBool()) {
+      switchToAsciiInputSource(true);
+    }
   }
 
   // now off computer
   m_isOnComputer = false;
+}
+
+bool OSXComputer::shouldEnforceAsciiInputSource(bool isPrimary, bool isOnScreen, bool settingEnabled)
+{
+  return isPrimary && !isOnScreen && settingEnabled;
+}
+
+KeyModifierMask
+OSXComputer::adjustRemoteCapsLockMask(KeyModifierMask oldMask, KeyModifierMask newMask, CGKeyCode keyCode)
+{
+  if (keyCode == kVK_CapsLock) {
+    return (newMask & ~KeyModifierCapsLock) | ((oldMask ^ KeyModifierCapsLock) & KeyModifierCapsLock);
+  }
+
+  // Selecting the ASCII input source after Caps Lock produces a synthetic
+  // flags-changed event. macOS may report 0xff or the most recent ordinary
+  // key code for that event, so only the physical Caps key may change the
+  // remote Caps state. Changes to every other modifier still pass through.
+  return (newMask & ~KeyModifierCapsLock) | (oldMask & KeyModifierCapsLock);
+}
+
+void OSXComputer::switchToAsciiInputSource(bool preserveCurrentSource)
+{
+  std::lock_guard<std::mutex> lock(g_tisMutex);
+  AutoTISInputSourceRef currentSource(TISCopyCurrentKeyboardInputSource(), CFRelease);
+  AutoTISInputSourceRef asciiSource(TISCopyCurrentASCIICapableKeyboardInputSource(), CFRelease);
+  if (!currentSource || !asciiSource) {
+    LOG_WARN("failed to get current or ASCII-capable macOS input source");
+    return;
+  }
+
+  auto currentSourceId =
+      static_cast<CFStringRef>(TISGetInputSourceProperty(currentSource.get(), kTISPropertyInputSourceID));
+  auto asciiSourceId =
+      static_cast<CFStringRef>(TISGetInputSourceProperty(asciiSource.get(), kTISPropertyInputSourceID));
+  if (!currentSourceId || !asciiSourceId) {
+    LOG_WARN("failed to get macOS input source identifier");
+    return;
+  }
+
+  if (CFEqual(currentSourceId, asciiSourceId)) {
+    return;
+  }
+
+  if (preserveCurrentSource && m_savedInputSourceId.empty()) {
+    auto savedSourceId = CFStringRefToUTF8String(currentSourceId);
+    if (!savedSourceId) {
+      LOG_WARN("failed to encode macOS input source identifier");
+      return;
+    }
+    m_savedInputSourceId = savedSourceId;
+    free(savedSourceId);
+  }
+
+  if (TISSelectInputSource(asciiSource.get()) != noErr) {
+    LOG_WARN("failed to switch to an ASCII-capable macOS input source");
+    return;
+  }
+
+  LOG_DEBUG("switched to an ASCII-capable macOS input source");
+}
+
+void OSXComputer::restoreInputSource()
+{
+  if (m_savedInputSourceId.empty()) {
+    return;
+  }
+
+  using AutoCFString = std::unique_ptr<const __CFString, CFDeallocator>;
+
+  std::lock_guard<std::mutex> lock(g_tisMutex);
+  AutoCFString savedSourceId(
+      CFStringCreateWithCString(kCFAllocatorDefault, m_savedInputSourceId.c_str(), kCFStringEncodingUTF8), CFRelease
+  );
+  if (!savedSourceId) {
+    LOG_WARN("failed to decode saved macOS input source identifier");
+    m_savedInputSourceId.clear();
+    return;
+  }
+
+  const void *keys[] = {kTISPropertyInputSourceID};
+  const void *values[] = {savedSourceId.get()};
+  AutoCFDictionary filter(
+      CFDictionaryCreate(
+          kCFAllocatorDefault, keys, values, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks
+      ),
+      CFRelease
+  );
+  AutoCFArray sources(TISCreateInputSourceList(filter.get(), true), CFRelease);
+  if (!sources || CFArrayGetCount(sources.get()) == 0) {
+    LOG_WARN("saved macOS input source is no longer available");
+    m_savedInputSourceId.clear();
+    return;
+  }
+
+  auto source = static_cast<TISInputSourceRef>(const_cast<void *>(CFArrayGetValueAtIndex(sources.get(), 0)));
+  if (TISSelectInputSource(source) != noErr) {
+    LOG_WARN("failed to restore the previous macOS input source");
+    return;
+  }
+
+  m_savedInputSourceId.clear();
+  LOG_DEBUG("restored the previous macOS input source");
 }
 
 bool OSXComputer::setClipboard(ClipboardID, const IClipboard *src)
@@ -880,12 +991,21 @@ void OSXComputer::screensaver(bool activate)
 
 void OSXComputer::resetOptions()
 {
-  // no options
+  m_navigationGesturesEnabled = false;
+  m_navigationGestureAction1 = NavigationGestureDirection::Left;
+  m_navigationGestureAction2 = NavigationGestureDirection::Right;
 }
 
-void OSXComputer::setOptions(const OptionsList &)
+void OSXComputer::setOptions(const OptionsList &options)
 {
-  // no options
+  if (options.size() % 2 != 0) {
+    LOG_ERR("options are the incorrect size, can not process them");
+    return;
+  }
+
+  m_navigationGesturesEnabled = navigationGesturesEnabledFromOptions(options, m_navigationGesturesEnabled);
+  navigationDirectionsFromOptions(options, m_navigationGestureAction1, m_navigationGestureAction2);
+  LOG_VERBOSE("macOS navigation gesture forwarding: %s", m_navigationGesturesEnabled ? "enabled" : "disabled");
 }
 
 void OSXComputer::setSequenceNumber(uint32_t seqNum)
@@ -1082,6 +1202,16 @@ void OSXComputer::displayReconfigurationCallback(
 bool OSXComputer::onKey(CGEventRef event)
 {
   CGEventType eventKind = CGEventGetType(event);
+  const auto enforceAscii = shouldEnforceAsciiInputSource(
+      m_isPrimary, m_isOnComputer, Settings::value(Settings::Server::SwitchToAsciiOnLeave).toBool()
+  );
+
+  if (enforceAscii) {
+    // Caps Lock can change the macOS input source even while the pointer is on
+    // another computer. Reassert ASCII before decoding every remote key event
+    // so platform-independent clients receive physical ASCII key IDs.
+    switchToAsciiInputSource(false);
+  }
 
   // get the key and active modifiers
   uint32_t virtualKey = CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode);
@@ -1093,7 +1223,10 @@ bool OSXComputer::onKey(CGEventRef event)
     // get old and new modifier state
     KeyModifierMask oldMask = getActiveModifiers();
     KeyModifierMask newMask = m_keyState->mapModifiersFromOSX(macMask);
-    m_keyState->handleModifierKeys(getEventTarget(), oldMask, newMask);
+    if (enforceAscii) {
+      newMask = adjustRemoteCapsLockMask(oldMask, newMask, static_cast<CGKeyCode>(virtualKey));
+    }
+    m_keyState->handleModifierKeys(getEventTarget(), virtualKey, oldMask, newMask);
 
     // if the current set of modifiers exactly matches a modifiers-only
     // hot key then generate a hot key down event.
@@ -1152,7 +1285,7 @@ bool OSXComputer::onKey(CGEventRef event)
   // map event to keys
   KeyModifierMask mask;
   OSXKeyState::KeyIDs keys;
-  KeyButton button = m_keyState->mapKeyFromEvent(keys, &mask, event);
+  KeyButton button = m_keyState->mapKeyFromEvent(keys, &mask, event, enforceAscii);
   if (button == 0) {
     return false;
   }
@@ -1705,7 +1838,16 @@ CGEventRef OSXComputer::handleCGInputEvent(CGEventTapProxy proxy, CGEventType ty
         computer->mapScrollWheelToDeskflow(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis1))
     );
     break;
-  case kCGEventKeyDown:
+  case kCGEventKeyDown: {
+    const auto keyCode = static_cast<CGKeyCode>(CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode));
+    const auto isAutoRepeat = CGEventGetIntegerValueField(event, kCGKeyboardEventAutorepeat) != 0;
+    if (!computer->m_isOnComputer && isEmergencyReturnKey(type, keyCode, CGEventGetFlags(event), isAutoRepeat)) {
+      LOG_WARN("macOS emergency return shortcut pressed");
+      computer->sendEvent(EventTypes::ServerReturnToPrimary);
+      return nullptr;
+    }
+    [[fallthrough]];
+  }
   case kCGEventKeyUp:
   case kCGEventFlagsChanged:
     computer->onKey(event);
@@ -1722,6 +1864,34 @@ CGEventRef OSXComputer::handleCGInputEvent(CGEventTapProxy proxy, CGEventType ty
     break;
   case NX_NULLEVENT:
     break;
+  case kNavigationGestureEventType: {
+    if (computer->m_isOnComputer || !computer->m_navigationGesturesEnabled) {
+      break;
+    }
+
+    NSEvent *nativeEvent = [NSEvent eventWithCGEvent:event];
+    if (nativeEvent == nil || nativeEvent.type != NSEventTypeSwipe) {
+      break;
+    }
+
+    const auto deltaX = static_cast<double>(nativeEvent.deltaX);
+    const auto deltaY = static_cast<double>(nativeEvent.deltaY);
+    const auto direction =
+        classifyNavigationGesture(type, computer->m_isOnComputer, computer->m_navigationGesturesEnabled, deltaX, deltaY);
+    const auto action = navigationActionSlotForDirection(
+        direction, computer->m_navigationGestureAction1, computer->m_navigationGestureAction2
+    );
+    if (action == NavigationActionSlot::None) {
+      break;
+    }
+
+    computer->sendEvent(EventTypes::PrimaryComputerNavigationGesture, NavigationGestureInfo::alloc(action));
+    LOG_DEBUG(
+        "forwarding macOS navigation gesture deltaX=%+.3f deltaY=%+.3f as action=%d", deltaX, deltaY,
+        static_cast<int>(action)
+    );
+    break;
+  }
   default:
     if (type == NX_SYSDEFINED) {
       if (isMediaKeyEvent(event)) {
@@ -1742,6 +1912,76 @@ CGEventRef OSXComputer::handleCGInputEvent(CGEventTapProxy proxy, CGEventType ty
   } else {
     return nullptr;
   }
+}
+
+bool OSXComputer::isEmergencyReturnKey(CGEventType type, CGKeyCode keyCode, CGEventFlags flags, bool isAutoRepeat)
+{
+  constexpr auto requiredModifiers = kCGEventFlagMaskControl | kCGEventFlagMaskAlternate | kCGEventFlagMaskCommand;
+  return type == kCGEventKeyDown && keyCode == kVK_Escape && !isAutoRepeat &&
+         (flags & requiredModifiers) == requiredModifiers;
+}
+
+bool OSXComputer::navigationGesturesEnabledFromOptions(const OptionsList &options, bool currentValue)
+{
+  if (options.size() % 2 != 0) {
+    return currentValue;
+  }
+
+  for (size_t i = 0; i < options.size(); i += 2) {
+    if (options[i] == kOptionMacNavigationGestures) {
+      currentValue = options[i + 1] != 0;
+    }
+  }
+  return currentValue;
+}
+
+void OSXComputer::navigationDirectionsFromOptions(
+    const OptionsList &options, NavigationGestureDirection &action1, NavigationGestureDirection &action2
+)
+{
+  if (options.size() % 2 != 0) {
+    return;
+  }
+
+  for (size_t i = 0; i < options.size(); i += 2) {
+    const auto direction = static_cast<NavigationGestureDirection>(options[i + 1]);
+    if (direction < NavigationGestureDirection::Left || direction > NavigationGestureDirection::Down) {
+      continue;
+    }
+
+    if (options[i] == kOptionMacNavigationGestureAction1) {
+      action1 = direction;
+    } else if (options[i] == kOptionMacNavigationGestureAction2) {
+      action2 = direction;
+    }
+  }
+}
+
+NavigationGestureDirection OSXComputer::classifyNavigationGesture(
+    CGEventType type, bool isOnScreen, bool enabled, double deltaX, double deltaY
+)
+{
+  if (type != kNavigationGestureEventType || isOnScreen || !enabled) {
+    return NavigationGestureDirection::None;
+  }
+
+  return navigationGestureDirectionFromDeltas(deltaX, deltaY);
+}
+
+NavigationActionSlot OSXComputer::navigationActionSlotForDirection(
+    NavigationGestureDirection direction, NavigationGestureDirection action1, NavigationGestureDirection action2
+)
+{
+  if (direction == NavigationGestureDirection::None) {
+    return NavigationActionSlot::None;
+  }
+  if (direction == action1) {
+    return NavigationActionSlot::Action1;
+  }
+  if (direction == action2) {
+    return NavigationActionSlot::Action2;
+  }
+  return NavigationActionSlot::None;
 }
 
 void OSXComputer::MouseButtonState::set(uint32_t button, EMouseButtonState state)
@@ -1789,7 +2029,7 @@ char *OSXComputer::CFStringRefToUTF8String(CFStringRef aString)
   }
 
   CFIndex length = CFStringGetLength(aString);
-  CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8);
+  CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
   char *buffer = (char *)malloc(maxSize);
 
   if (!CFStringGetCString(aString, buffer, maxSize, kCFStringEncodingUTF8)) {

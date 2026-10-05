@@ -136,6 +136,9 @@ enum class EventTypes : uint32_t
   /// This event is sent to inform the server to toggle computers.  These is no event data.
   ServerToggleComputer,
 
+  /// This event is sent to make the server immediately return input to the primary computer.
+  ServerReturnToPrimary,
+
   /** This event is sent to inform the server to switch computers.
       The event data is a pointer to SwitchInDirectionInfo that indicates the target direction.
   */
@@ -170,6 +173,9 @@ enum class EventTypes : uint32_t
 
   /// This event is sent when button is up. Event data is a pointer to ButtonInfo
   PrimaryComputerButtonUp,
+
+  /// A macOS navigation gesture was matched to a configurable action slot.
+  PrimaryComputerNavigationGesture,
 
   /** This event is sent when mouse moves on the server.
       Event data is a pointer to MotionInfo, the values are absolute position.

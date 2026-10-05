@@ -59,6 +59,17 @@ IPrimaryComputer::WheelInfo *IPrimaryComputer::WheelInfo::alloc(int32_t xDelta, 
 }
 
 //
+// IPrimaryComputer::NavigationGestureInfo
+//
+
+IPrimaryComputer::NavigationGestureInfo *IPrimaryComputer::NavigationGestureInfo::alloc(NavigationActionSlot action)
+{
+  auto *info = (NavigationGestureInfo *)malloc(sizeof(NavigationGestureInfo));
+  info->m_action = action;
+  return info;
+}
+
+//
 // IPrimaryComputer::HotKeyInfo
 //
 

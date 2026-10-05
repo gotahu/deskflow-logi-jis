@@ -1,5 +1,6 @@
 /*
  * Deskflow -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2026 Deskflow Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Synergy App Ltd
  * SPDX-FileCopyrightText: (C) 2004 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -9,6 +10,7 @@
 
 #include "OSXAutoTypes.h"
 #include "deskflow/KeyState.h"
+#include "platform/OSXKeyCalibration.h"
 
 #include <Carbon/Carbon.h>
 
@@ -23,6 +25,8 @@ A key state for OS X.
 */
 class OSXKeyState : public KeyState
 {
+  friend class OSXKeyStateTests;
+
 public:
   using KeyIDs = std::vector<KeyID>;
 
@@ -38,7 +42,7 @@ public:
   Determines which modifier keys have changed and updates the modifier
   state and sends key events as appropriate.
   */
-  void handleModifierKeys(void *target, KeyModifierMask oldMask, KeyModifierMask newMask);
+  void handleModifierKeys(void *target, uint32_t virtualKey, KeyModifierMask oldMask, KeyModifierMask newMask);
 
   //@}
   //! @name accessors
@@ -65,7 +69,9 @@ public:
   that was pressed or released, or 0 if the button doesn't map to a known
   KeyID.
   */
-  KeyButton mapKeyFromEvent(KeyIDs &ids, KeyModifierMask *maskOut, CGEventRef event) const;
+  KeyButton mapKeyFromEvent(
+      KeyIDs &ids, KeyModifierMask *maskOut, CGEventRef event, bool useRemoteCapsLockState
+  ) const;
 
   //! Map key and mask to native values
   /*!
@@ -90,8 +96,17 @@ protected:
   // KeyState overrides
   void getKeyMap(deskflow::KeyMap &keyMap) override;
   void fakeKey(const Keystroke &keystroke) override;
+  KeyID remapFakeKeyID(KeyID id, KeyModifierMask mask) override;
+  KeyButton remapFakeKey(
+      KeyID id, KeyModifierMask mask, KeyButton localID, deskflow::KeyMap::ModifierToKeys &activeModifiers,
+      KeyModifierMask &currentState, deskflow::KeyMap::Keystrokes &keys
+  ) override;
 
 private:
+  static uint32_t adjustModifiersForRemoteCapsLock(
+      uint32_t modifiers, KeyModifierMask activeModifiers, bool enabled
+  );
+
   class KeyResource;
 
   // Add hard coded special keys to a deskflow::KeyMap.
@@ -162,10 +177,6 @@ private:
   bool m_altPressed;
   bool m_superPressed;
   bool m_capsPressed;
-  // track whether the right-hand variant of a modifier is held so the
-  // device-dependent event flags report the correct side.
-  bool m_shiftRightPressed;
-  bool m_controlRightPressed;
-  bool m_altRightPressed;
-  bool m_superRightPressed;
+  CGEventFlags m_deviceDependentFlags;
+  OSXKeyCalibration m_keyCalibration;
 };

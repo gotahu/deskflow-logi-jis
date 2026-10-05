@@ -173,6 +173,38 @@ p, li { white-space: pre-wrap; }
         <source>Use dynamic reconnection time based on connection attempts</source>
         <translation type="unfinished">Использовать динамическое время переподключения в зависимости от попыток подключения</translation>
     </message>
+    <message>
+        <source>Navigation Gesture Actions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose how navigation actions received from a Deskflow server behave on this computer.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Action 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ignore</source>
+        <translation type="unfinished">Игнорировать</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Custom shortcut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Action 2</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ComputerSettingsDialog</name>
@@ -435,6 +467,112 @@ Do you want to connect to the server?
     </message>
 </context>
 <context>
+    <name>KeyCaptureButton</name>
+    <message>
+        <source>Press a key...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>KeyMapCalibrationDialog</name>
+    <message>
+        <source>Keyboard Calibration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Physical key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Click to capture</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Key code</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Deskflow key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use the same key for each capture. Mouse clicks are ignored while recording.
+Saved to ~/Library/Deskflow/keyboard-calibration.json
+
+Overrides can also be added manually in keyboard-calibration.json.
+Example: &quot;overrides&quot;: [ { &quot;match&quot;: { &quot;id&quot;: &quot;F13&quot; }, &quot;send&quot;: { &quot;id&quot;: &quot;Control_L&quot; } }, { ... } ]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation type="unfinished">Закрывать</translation>
+    </message>
+    <message>
+        <source>Unable to Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not create the selected folder.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The JSON file is corrupted or you do not have permission to read it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The JSON file is invalid and could not be opened.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You do not have permission to write to the JSON file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Writing to the JSON file failed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Saved successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Saved to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not captured</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Capture a physical key and a Deskflow key.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Capture the physical key first.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Capture the Deskflow key next.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Both captures match. Saving will still update the JSON.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The text matches, but the key code is different.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Difference detected. Saving will append or replace this mapping in the JSON.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>LogDock</name>
     <message>
         <source>Log</source>
@@ -573,6 +711,10 @@ Do you want to connect to the server?
     <message>
         <source>&lt;p&gt;Failed to connect to the server &apos;%1&apos;.&lt;/p&gt;&lt;p&gt;A Client with your name is already connected to the server.&lt;/p&gt;Please ensure that you&apos;re using a unique name and that only a single instance of the client process is running.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось подключиться к серверу &apos;%1&apos;.&lt;/p&gt;&lt;p&gt;Клиент с таким именем уже подключен к серверу.&lt;/p&gt;Убедитесь, что вы используете уникальное имя и запущен только один процесс клиента.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>Keyboard Calibration</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>View &amp;Help</source>
@@ -1082,6 +1224,14 @@ Enabling this setting will disable the server config GUI.</source>
         <translation>Путь к файлу конфигурации</translation>
     </message>
     <message>
+        <source>Action 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Action 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>%1 Configurations (*.conf);;All files (*.*)</source>
         <extracomment>%1 is replaced with the application names (*.conf) and (*.*) should not be translated</extracomment>
         <translation>Конфигурации %1 (*.conf);;Все файлы (*.*)</translation>
@@ -1093,6 +1243,46 @@ Enabling this setting will disable the server config GUI.</source>
     <message>
         <source>Enable lock to computer at startup</source>
         <translation>Включать привязку к компьютеру при запуске</translation>
+    </message>
+    <message>
+        <source>Forward macOS navigation gestures</source>
+        <translation>Передавать навигационные жесты macOS</translation>
+    </message>
+    <message>
+        <source>Forwards macOS back and forward gestures as standard mouse buttons while controlling a client.</source>
+        <translation type="vanished">Передаёт жесты macOS «Назад» и «Вперёд» как стандартные кнопки мыши при управлении клиентом.</translation>
+    </message>
+    <message>
+        <source>Forwards selected macOS swipe gestures as configurable actions while controlling a client.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Action 1 input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Swipe left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Swipe right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Swipe up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Swipe down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detect…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Action 2 input</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1272,6 +1462,18 @@ Enabling this setting will disable the server config GUI.</source>
     <message>
         <source>Show the main window</source>
         <translation type="unfinished">Показать главное окно</translation>
+    </message>
+    <message>
+        <source>Prevents macOS input methods from intercepting keys sent to another computer. The previous input source is restored when returning.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use an ASCII input source while controlling another computer (macOS)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Emergency return to this Mac: Control + Option + Command + Escape</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Run command on enter</source>

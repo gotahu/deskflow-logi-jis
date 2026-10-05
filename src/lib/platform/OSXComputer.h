@@ -1,6 +1,6 @@
 /*
  * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 Deskflow Developers
+ * SPDX-FileCopyrightText: (C) 2025 - 2026 Deskflow Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Synergy App Ltd
  * SPDX-FileCopyrightText: (C) 2004 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "common/NavigationTypes.h"
 #include "deskflow/PlatformComputer.h"
 #include "platform/OSXClipboard.h"
 #include "platform/OSXPowerManager.h"
@@ -44,6 +45,8 @@ class Mutex;
 //! Implementation of IPlatformComputer for OS X
 class OSXComputer : public PlatformComputer
 {
+  friend class OSXScreenTests;
+
 public:
   OSXComputer(IEventQueue *events, bool isPrimary, bool enableLangSync = false);
 
@@ -159,6 +162,12 @@ private:
   void handleConfirmSleep(const Event &event);
 
   bool checkAXPermissions();
+  static bool isEmergencyReturnKey(CGEventType type, CGKeyCode keyCode, CGEventFlags flags, bool isAutoRepeat);
+  static bool shouldEnforceAsciiInputSource(bool isPrimary, bool isOnScreen, bool settingEnabled);
+  static KeyModifierMask
+  adjustRemoteCapsLockMask(KeyModifierMask oldMask, KeyModifierMask newMask, CGKeyCode keyCode);
+  void switchToAsciiInputSource(bool preserveCurrentSource);
+  void restoreInputSource();
 
   // global hotkey operating mode
   static bool isGlobalHotKeyOperatingModeAvailable();
@@ -174,6 +183,16 @@ private:
   static char *CFStringRefToUTF8String(CFStringRef aString);
 
 private:
+  static bool navigationGesturesEnabledFromOptions(const OptionsList &options, bool currentValue);
+  static void navigationDirectionsFromOptions(
+      const OptionsList &options, NavigationGestureDirection &action1, NavigationGestureDirection &action2
+  );
+  static NavigationGestureDirection
+  classifyNavigationGesture(CGEventType type, bool isOnScreen, bool enabled, double deltaX, double deltaY);
+  static NavigationActionSlot navigationActionSlotForDirection(
+      NavigationGestureDirection direction, NavigationGestureDirection action1, NavigationGestureDirection action2
+  );
+
   struct HotKeyItem
   {
   public:
@@ -252,8 +271,13 @@ private:
 
   bool m_cursorHidden;
 
+  bool m_navigationGesturesEnabled = false;
+  NavigationGestureDirection m_navigationGestureAction1 = NavigationGestureDirection::Left;
+  NavigationGestureDirection m_navigationGestureAction2 = NavigationGestureDirection::Right;
+
   // keyboard stuff
   OSXKeyState *m_keyState;
+  std::string m_savedInputSourceId;
 
   // clipboards
   OSXClipboard m_pasteboard;

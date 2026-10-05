@@ -1,5 +1,6 @@
 /*
  * Deskflow -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2026 Deskflow Developers
  * SPDX-FileCopyrightText: (C) 2025 - 2026 Chris Rizzitello <sithlord48@gmail.com>
  * SPDX-FileCopyrightText: (C) 2016 - 2025 Synergy App Ltd
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -42,6 +43,10 @@ public:
     inline static const auto YScrollScale = QStringLiteral("client/yScrollScale");
     inline static const auto XScrollScale = QStringLiteral("client/xScrollScale");
     inline static const auto LanguageSync = QStringLiteral("client/languageSync");
+    inline static const auto NavigationGestureAction1 = QStringLiteral("client/navigationGestureAction1");
+    inline static const auto NavigationGestureAction2 = QStringLiteral("client/navigationGestureAction2");
+    inline static const auto NavigationGestureShortcut1 = QStringLiteral("client/navigationGestureShortcut1");
+    inline static const auto NavigationGestureShortcut2 = QStringLiteral("client/navigationGestureShortcut2");
     inline static const auto RemoteHost = QStringLiteral("client/remoteHost");
     inline static const auto XdpClipboardRetried = QStringLiteral("client/xdpClipboardRetried");
     inline static const auto XdpRestoreToken = QStringLiteral("client/xdpRestoreToken");
@@ -107,6 +112,9 @@ public:
     inline static const auto DisableLockToComputer = QStringLiteral("server/disableLockToComputer");
     inline static const auto EnableClipboard = QStringLiteral("server/enableClipboard");
     inline static const auto EnableHeartbeat = QStringLiteral("server/enableHeartbeat");
+    inline static const auto MacNavigationGesturesEnabled = QStringLiteral("server/macNavigationGesturesEnabled");
+    inline static const auto MacNavigationGestureAction1 = QStringLiteral("server/macNavigationGestureAction1");
+    inline static const auto MacNavigationGestureAction2 = QStringLiteral("server/macNavigationGestureAction2");
     inline static const auto EnableSwitchDelay = QStringLiteral("server/enableSwitchDelay");
     inline static const auto EnableSwitchDoubleTap = QStringLiteral("server/enableSwitchDoubleTap");
     inline static const auto ExternalConfig = QStringLiteral("server/externalConfig");
@@ -118,6 +126,7 @@ public:
     inline static const auto RelativeMouseMoves = QStringLiteral("server/relativeMouseMoves");
     inline static const auto SwitchDelay = QStringLiteral("server/switchDelay");
     inline static const auto SwitchDoubleTap = QStringLiteral("server/switchDoubleTap");
+    inline static const auto SwitchToAsciiOnLeave = QStringLiteral("server/switchToAsciiOnLeave");
     inline static const auto Win32KeepForeground = QStringLiteral("server/win32KeepForeground");
     inline static const auto XdpClipboardRetried = QStringLiteral("server/xdpClipboardRetried");
     inline static const auto XdpRestoreToken = QStringLiteral("server/xdpRestoreToken");
@@ -277,6 +286,10 @@ private:
     , Client::InvertYScroll
     , Client::InvertXScroll
     , Client::LanguageSync
+    , Client::NavigationGestureAction1
+    , Client::NavigationGestureAction2
+    , Client::NavigationGestureShortcut1
+    , Client::NavigationGestureShortcut2
     , Client::RemoteHost
     , Client::YScrollScale
     , Client::XScrollScale
@@ -323,6 +336,9 @@ private:
     , Server::DisableLockToComputer
     , Server::EnableClipboard
     , Server::EnableHeartbeat
+    , Server::MacNavigationGesturesEnabled
+    , Server::MacNavigationGestureAction1
+    , Server::MacNavigationGestureAction2
     , Server::EnableSwitchDelay
     , Server::EnableSwitchDoubleTap
     , Server::ExternalConfig
@@ -334,6 +350,7 @@ private:
     , Server::RelativeMouseMoves
     , Server::SwitchDelay
     , Server::SwitchDoubleTap
+    , Server::SwitchToAsciiOnLeave
     , Server::Win32KeepForeground
   };
 
@@ -358,11 +375,13 @@ private:
     , Server::DefaultLockToComputerState
     , Server::DisableLockToComputer
     , Server::EnableHeartbeat
+    , Server::MacNavigationGesturesEnabled
     , Server::EnableSwitchDelay
     , Server::EnableSwitchDoubleTap
     , Server::ExternalConfig
     , Server::RelativeMouseMoves
     , Server::XdpClipboardRetried
+    , Server::SwitchToAsciiOnLeave
   };
 
   // When checking the default values this list contains the ones that default to true.
