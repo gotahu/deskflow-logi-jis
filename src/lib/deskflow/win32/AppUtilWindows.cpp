@@ -7,6 +7,7 @@
  */
 
 #include "deskflow/win32/AppUtilWindows.h"
+#include "common/WindowsKeyboardLanguage.h"
 
 #include "arch/Arch.h"
 #include "arch/win32/ArchDaemonWindows.h"
@@ -135,12 +136,7 @@ std::vector<std::string> AppUtilWindows::getKeyboardLayoutList()
     uLayouts = GetKeyboardLayoutList(uLayouts, lpList);
 
     for (int i = 0; i < uLayouts; ++i) {
-      std::string code("", 2);
-      GetLocaleInfoA(
-          MAKELCID(((ULONG_PTR)lpList[i] & 0xffffffff), SORT_DEFAULT), LOCALE_SISO639LANGNAME, &code[0],
-          static_cast<int>(code.size())
-      );
-      layoutLangCodes.push_back(code);
+      layoutLangCodes.push_back(deskflow::windows::keyboardLanguage(lpList[i]));
     }
 
     if (lpList) {
@@ -152,15 +148,7 @@ std::vector<std::string> AppUtilWindows::getKeyboardLayoutList()
 
 std::string AppUtilWindows::getCurrentLanguageCode()
 {
-  std::string code("", 2);
-
-  auto hklLayout = getCurrentKeyboardLayout();
-  if (hklLayout) {
-    auto localLayoutID = MAKELCID(LOWORD(hklLayout), SORT_DEFAULT);
-    GetLocaleInfoA(localLayoutID, LOCALE_SISO639LANGNAME, &code[0], static_cast<int>(code.size()));
-  }
-
-  return code;
+  return deskflow::windows::keyboardLanguage(getCurrentKeyboardLayout());
 }
 
 HKL AppUtilWindows::getCurrentKeyboardLayout() const

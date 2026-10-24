@@ -108,3 +108,7 @@ layout must be installed in Windows. Turn these options OFF for US keyboards.
 
 Mac and Windows should both be updated for this change. Existing scroll speed
 and direction settings remain unchanged.
+
+Windows language detection also fixes an undersized GetLocaleInfoA buffer.
+Japanese, English and Japanese IME handles now return usable ISO language codes;
+a Windows-specific regression test validates the actual Windows API results.

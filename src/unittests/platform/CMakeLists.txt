@@ -12,6 +12,13 @@ create_test(
 
 if (WIN32)
   create_test(
+    NAME MSWindowsLanguageTests
+    DEPENDS platform
+    LIBS base arch
+    SOURCE MSWindowsLanguageTests.cpp
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/platform"
+  )
+  create_test(
     NAME MSWindowsClipboardTests
     DEPENDS platform
     LIBS base arch
