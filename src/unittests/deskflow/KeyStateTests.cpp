@@ -289,4 +289,23 @@ void KeyStateTests::fixedJapaneseLayout_mapsPressAndRepeatToJISPositions()
   }
 }
 
+void KeyStateTests::fixedJapaneseLayout_preservesActiveJapaneseIME()
+{
+  MockEventQueue events;
+  deskflow::KeyMap map;
+  for (int group = 0; group < 3; ++group) {
+    deskflow::KeyMap::KeyItem item;
+    item.m_id = '(';
+    item.m_group = group;
+    item.m_button = (group == 0) ? 9 : 8;
+    map.addKeyEntry(item);
+  }
+  map.finish();
+  RecordingKeyState state(&events, map, {"en", "ja", "ja"}, true);
+  state.m_activeGroup = 2; // ATOK; group 1 is another Japanese IME.
+  state.fakeKeyDown('(', 0, 55, deskflow::jis::language("en", true));
+  QCOMPARE(state.countStrokes(deskflow::KeyMap::Keystroke::KeyType::Group), 0);
+  QVERIFY(state.countStrokes(deskflow::KeyMap::Keystroke::KeyType::Button) > 0);
+}
+
 QTEST_MAIN(KeyStateTests)

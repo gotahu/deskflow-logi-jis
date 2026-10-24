@@ -300,6 +300,12 @@ void KeyMap::setLanguageData(std::vector<std::string> layouts)
 
 int32_t KeyMap::getLanguageGroupID(int32_t group, const std::string &lang) const
 {
+  // Several IMEs can share a language (for example ATOK and Microsoft IME).
+  // Keep the active one when it already satisfies the requested language.
+  if (group >= 0 && static_cast<size_t>(group) < m_keyboardLayouts.size() && m_keyboardLayouts[group] == lang) {
+    return group;
+  }
+
   auto id = group;
 
   if (auto it = std::find(m_keyboardLayouts.begin(), m_keyboardLayouts.end(), lang); it != m_keyboardLayouts.end()) {

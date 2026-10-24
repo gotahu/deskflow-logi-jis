@@ -30,6 +30,7 @@ private Q_SLOTS:
   void isKeyDown_keyDown_retrunsTrue();
   void updateKeyState_pollInsertsSingleKey_keyIsDown();
   void fixedJapaneseLayout_mapsPressAndRepeatToJISPositions();
+  void fixedJapaneseLayout_preservesActiveJapaneseIME();
   void fakeKeyDown_langSyncEnabled_switchesToServerGroup();
   void fakeKeyDown_langSyncDisabled_keepsLocalGroup();
 

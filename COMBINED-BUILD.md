@@ -112,3 +112,6 @@ and direction settings remain unchanged.
 Windows language detection also fixes an undersized GetLocaleInfoA buffer.
 Japanese, English and Japanese IME handles now return usable ISO language codes;
 a Windows-specific regression test validates the actual Windows API results.
+
+When several input methods share Japanese, the active Japanese IME is retained
+(e.g. ATOK is not replaced with Microsoft IME just because both report ja).
