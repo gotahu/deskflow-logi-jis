@@ -43,6 +43,7 @@ public:
     inline static const auto YScrollScale = QStringLiteral("client/yScrollScale");
     inline static const auto XScrollScale = QStringLiteral("client/xScrollScale");
     inline static const auto ForceJapaneseLayout = QStringLiteral("client/forceJapaneseLayout");
+    inline static const auto WindowsAppCommandToCtrl = QStringLiteral("client/windowsAppCommandToCtrl");
     inline static const auto LanguageSync = QStringLiteral("client/languageSync");
     inline static const auto NavigationGestureAction1 = QStringLiteral("client/navigationGestureAction1");
     inline static const auto NavigationGestureAction2 = QStringLiteral("client/navigationGestureAction2");
@@ -290,6 +291,7 @@ private:
     , Client::InvertYScroll
     , Client::InvertXScroll
     , Client::ForceJapaneseLayout
+    , Client::WindowsAppCommandToCtrl
     , Client::LanguageSync
     , Client::NavigationGestureAction1
     , Client::NavigationGestureAction2

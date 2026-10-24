@@ -359,7 +359,7 @@ QVariant Settings::defaultValue(const QString &key)
   if (key == Client::YScrollScale || key == Client::XScrollScale)
     return 1.0;
 
-  if (key == Client::ForceJapaneseLayout)
+  if (key == Client::ForceJapaneseLayout || key == Client::WindowsAppCommandToCtrl)
     return deskflow::platform::isWindows();
   if (key == Server::ForceJapaneseLayout)
     return deskflow::platform::isMac();

@@ -16,6 +16,7 @@
 #include "platform/MSWindowsDesks.h"
 #include "platform/MSWindowsHandle.h"
 #include "platform/MSWindowsHook.h"
+#include "platform/MSWindowsAppFocus.h"
 
 // extended mouse buttons
 #if !defined(VK_XBUTTON1)
@@ -757,14 +758,36 @@ void MSWindowsKeyState::sendKeyEvent(
 
 void MSWindowsKeyState::fakeKeyDown(KeyID id, KeyModifierMask mask, KeyButton button, const std::string &lang)
 {
-  KeyState::fakeKeyDown(id, mask, button, deskflow::jis::language(lang, m_forceJapaneseLayout));
+  bool active = false;
+  if ((id == kKeySuper_L || id == kKeySuper_R) &&
+      Settings::value(Settings::Client::WindowsAppCommandToCtrl).toBool()) {
+    active = deskflow::windows::isWindowsAppForeground();
+  }
+  const auto mapped = m_windowsAppCommand.down(id, button, active);
+  if (mapped != id) LOG_DEBUG("Windows App: Command mapped to Ctrl");
+  KeyState::fakeKeyDown(mapped, m_windowsAppCommand.mask(mask), button,
+                        deskflow::jis::language(lang, m_forceJapaneseLayout));
 }
 
 bool MSWindowsKeyState::fakeKeyRepeat(
     KeyID id, KeyModifierMask mask, int32_t count, KeyButton button, const std::string &lang
 )
 {
-  return KeyState::fakeKeyRepeat(id, mask, count, button, deskflow::jis::language(lang, m_forceJapaneseLayout));
+  return KeyState::fakeKeyRepeat(m_windowsAppCommand.repeat(id, button), m_windowsAppCommand.mask(mask), count,
+                                button, deskflow::jis::language(lang, m_forceJapaneseLayout));
+}
+
+bool MSWindowsKeyState::fakeKeyUp(KeyButton button)
+{
+  const bool released = KeyState::fakeKeyUp(button);
+  m_windowsAppCommand.up(button);
+  return released;
+}
+
+void MSWindowsKeyState::fakeAllKeysUp()
+{
+  KeyState::fakeAllKeysUp();
+  m_windowsAppCommand.clear();
 }
 
 // We must use SendSAS (Secure Attention Sequence) to simulate Ctrl+Alt+Del (since Windows Vista).

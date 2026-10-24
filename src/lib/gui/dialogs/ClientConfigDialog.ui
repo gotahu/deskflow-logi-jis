@@ -44,6 +44,12 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="cbWindowsAppCommandToCtrl">
+     <property name="text"><string>Use Command as Ctrl in Windows App remote sessions</string></property>
+     <property name="toolTip"><string>Maps received Super (Command) keys to Ctrl only when a Windows App connection window is in front. The mapping lasts until the key is released. Windows clients only.</string></property>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string>Scroll Modifiers</string>

@@ -10,6 +10,14 @@ create_test(
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/platform"
 )
 
+create_test(
+  NAME WindowsAppCommandTests
+  DEPENDS platform
+  LIBS base arch
+  SOURCE WindowsAppCommandTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/platform"
+)
+
 if (WIN32)
   create_test(
     NAME MSWindowsLanguageTests

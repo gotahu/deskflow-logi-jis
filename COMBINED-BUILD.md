@@ -115,3 +115,15 @@ a Windows-specific regression test validates the actual Windows API results.
 
 When several input methods share Japanese, the active Japanese IME is retained
 (e.g. ATOK is not replaced with Microsoft IME just because both report ja).
+
+## Windows App: Command → Ctrl (r4)
+
+Windows クライアントでは、受信した Command（Super）を Windows App のリモート接続画面内だけ Ctrl に変換します。Mac サーバーは r3 のまま使用できます。
+
+- Configure Client → **Use Command as Ctrl in Windows App remote sessions**（初期値 ON）。設定ファイルは `[client] windowsAppCommandToCtrl=true`。
+- Windows App パッケージ `MicrosoftCorporationII.Windows365_*` 内の `msrdc.exe` が前面にある場合だけ有効です。Windows App の一覧画面、ブラウザー、従来の mstsc、WSLg の msrdc は対象外です。
+- 左右の Command に対応します。押した時点の変換先を離すまで維持し、切断時は状態を破棄します。アプリを切り替えた後は Command を一度離して押し直してください。
+- サーバーのコンピューター設定の **Super は Super のまま**にします。そこで Ctrl に変換すると、アプリを問わず Ctrl になります。
+- 物理的に Windows に接続したキーボードは対象外です。受信した Super に OS の識別情報はないため、Mac 以外のサーバーから受信した Super も、この設定が ON なら同じ変換対象になります。
+
+Windows App のプロセス構成の根拠: https://github.com/Azure/WindowsAppKiosk/blob/main/source/WindowsApp/ADVANCED_CUSTOMIZATIONS.md

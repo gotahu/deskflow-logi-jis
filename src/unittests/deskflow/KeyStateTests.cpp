@@ -10,12 +10,14 @@
 #include "base/EventQueue.h"
 #include "deskflow/KeyMap.h"
 #include "common/JISKeyboard.h"
+#include "platform/WindowsAppCommand.h"
 
 #include "MockEventQueue.h"
 #include "MockKeyMap.h"
 #include "MockKeyState.h"
 
 #include <algorithm>
+#include <tuple>
 
 namespace {
 
@@ -306,6 +308,45 @@ void KeyStateTests::fixedJapaneseLayout_preservesActiveJapaneseIME()
   state.fakeKeyDown('(', 0, 55, deskflow::jis::language("en", true));
   QCOMPARE(state.countStrokes(deskflow::KeyMap::Keystroke::KeyType::Group), 0);
   QVERIFY(state.countStrokes(deskflow::KeyMap::Keystroke::KeyType::Button) > 0);
+}
+
+void KeyStateTests::windowsAppCommand_releasesCtrlByOriginalButton()
+{
+  MockEventQueue events;
+  deskflow::KeyMap map;
+  for (const auto [id, button, modifier] : {
+           std::tuple<KeyID, KeyButton, KeyModifierMask>{kKeyControl_L, 29, KeyModifierControl},
+           {kKeySuper_L, 91, KeyModifierSuper}, {'c', 46, 0}}) {
+    deskflow::KeyMap::KeyItem item;
+    item.m_id = id;
+    item.m_button = button;
+    item.m_generates = modifier;
+    map.addKeyEntry(item);
+  }
+  map.finish();
+  RecordingKeyState state(&events, map, {"ja"}, false);
+  deskflow::windows::WindowsAppCommand mapping;
+  const auto ctrl = mapping.down(kKeySuper_L, 55, true);
+  state.fakeKeyDown(ctrl, mapping.mask(KeyModifierSuper), 55, "ja");
+  state.fakeKeyDown('c', mapping.mask(KeyModifierSuper), 8, "ja");
+  QVERIFY(state.fakeKeyUp(8));
+  // Key-up uses the server button, so a focus change cannot strand Ctrl.
+  QVERIFY(state.fakeKeyUp(55));
+  mapping.up(55);
+  QVERIFY(!state.isKeyDown(29));
+  QVERIFY(!state.isKeyDown(91));
+  bool ctrlDown = false, ctrlUp = false, copied = false;
+  for (const auto &stroke : state.m_faked) {
+    if (stroke.m_type != deskflow::KeyMap::Keystroke::KeyType::Button) continue;
+    const auto key = stroke.m_data.m_button;
+    QVERIFY(key.m_button != 91);
+    if (key.m_button == 29) {
+      ctrlDown |= key.m_press;
+      ctrlUp |= !key.m_press;
+    }
+    if (key.m_button == 46 && key.m_press) copied = true;
+  }
+  QVERIFY(ctrlDown && copied && ctrlUp);
 }
 
 QTEST_MAIN(KeyStateTests)

@@ -17,6 +17,7 @@ class KeyStateTests : public QObject
 private Q_SLOTS:
   void initTestCase();
   void keyDown();
+  void windowsAppCommand_releasesCtrlByOriginalButton();
   void keyUp();
   void invalidKey();
   void onKey_aKeyDown_keyStateOne();

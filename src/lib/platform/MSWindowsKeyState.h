@@ -8,6 +8,7 @@
 #pragma once
 
 #include "deskflow/KeyState.h"
+#include "platform/WindowsAppCommand.h"
 
 #include <string>
 #include <vector>
@@ -133,6 +134,8 @@ public:
   // IKeyState overrides
   void fakeKeyDown(KeyID id, KeyModifierMask mask, KeyButton button, const std::string &lang) override;
   bool fakeKeyRepeat(KeyID id, KeyModifierMask mask, int32_t count, KeyButton button, const std::string &lang) override;
+  bool fakeKeyUp(KeyButton button) override;
+  void fakeAllKeysUp() override;
   bool fakeCtrlAltDel() override;
   KeyModifierMask pollActiveModifiers() const override;
   int32_t pollActiveGroup() const override;
@@ -170,6 +173,7 @@ protected:
 
 private:
   bool m_forceJapaneseLayout = false;
+  deskflow::windows::WindowsAppCommand m_windowsAppCommand;
   using GroupList = std::vector<HKL>;
 
   bool getGroups(GroupList &) const;
