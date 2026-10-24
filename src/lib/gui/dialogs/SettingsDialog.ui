@@ -814,6 +814,12 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="cbForceJapaneseLayout">
+         <property name="text"><string>Send keys using the Japanese physical keyboard layout (JIS)</string></property>
+         <property name="toolTip"><string>Keeps JIS symbols and the transmitted language fixed to Japanese regardless of the active Mac input source.</string></property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="cbSwitchToAsciiOnLeave">
          <property name="toolTip">
           <string>Prevents macOS input methods from intercepting keys sent to another computer. The previous input source is restored when returning.</string>

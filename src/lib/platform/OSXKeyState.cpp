@@ -7,6 +7,8 @@
  */
 
 #include "platform/OSXKeyState.h"
+#include "common/JISKeyboard.h"
+#include "common/Settings.h"
 #include "arch/Arch.h"
 #include "base/Log.h"
 #include "platform/OSXKeyLayoutResource.h"
@@ -418,6 +420,15 @@ KeyButton OSXKeyState::mapKeyFromEvent(
     m_deadKeyState = 0;
     ids.push_back(i->second);
     return mapVirtualKeyToKeyButton(vkCode);
+  }
+
+  if (Settings::value(Settings::Server::ForceJapaneseLayout).toBool()) {
+    const auto fixed = deskflow::jis::symbol(vkCode, (CGEventGetFlags(event) & kCGEventFlagMaskShift) != 0);
+    if (fixed != 0) {
+      m_deadKeyState = 0;
+      ids.push_back(fixed);
+      return mapVirtualKeyToKeyButton(vkCode);
+    }
   }
 
   // get keyboard info

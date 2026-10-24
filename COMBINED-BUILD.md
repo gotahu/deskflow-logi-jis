@@ -92,3 +92,19 @@ Trackpad vertical direction can also be reversed independently in the Mac
 Advanced settings. This custom build defaults the checkbox to ON to compensate
 for the reported trackpad/wheel mismatch while retaining the client's existing
 Invert setting. Disable it if no compensation is needed in your setup.
+
+## Fixed JIS keyboard mode (r3)
+
+Mac Settings > Advanced > Send keys using the Japanese physical keyboard layout
+(JIS) defaults ON in this custom Mac build. Symbol positions and the transmitted
+language are independent of the current Mac IME. Eisu/Kana and ordinary letter,
+modifier and keypad processing retain their existing paths.
+
+Windows Configure Client > Always use the Japanese keyboard layout (JIS)
+defaults ON. This selects the installed Japanese layout regardless of en/ja
+metadata from the server and takes precedence over normal language sync.
+ATOK/IME on/off remains controlled by the IME keys. The Japanese keyboard
+layout must be installed in Windows. Turn these options OFF for US keyboards.
+
+Mac and Windows should both be updated for this change. Existing scroll speed
+and direction settings remain unchanged.

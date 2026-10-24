@@ -11,6 +11,8 @@
 #include "base/IEventQueue.h"
 #include "base/Log.h"
 #include "common/Constants.h"
+#include "common/JISKeyboard.h"
+#include "common/Settings.h"
 #include "platform/MSWindowsDesks.h"
 #include "platform/MSWindowsHandle.h"
 #include "platform/MSWindowsHook.h"
@@ -569,7 +571,7 @@ MSWindowsKeyState::MSWindowsKeyState(
     MSWindowsDesks *desks, void *eventTarget, IEventQueue *events, std::vector<std::string> layouts,
     bool isLangSyncEnabled
 )
-    : KeyState(events, std::move(layouts), isLangSyncEnabled),
+    : KeyState(events, std::move(layouts), isLangSyncEnabled || Settings::value(Settings::Client::ForceJapaneseLayout).toBool()),
       m_eventTarget(eventTarget),
       m_desks(desks),
       m_keyLayout(GetKeyboardLayout(0)),
@@ -580,6 +582,7 @@ MSWindowsKeyState::MSWindowsKeyState(
       m_originalSavedModifiers(0),
       m_events(events)
 {
+  m_forceJapaneseLayout = Settings::value(Settings::Client::ForceJapaneseLayout).toBool();
   init();
 }
 
@@ -587,7 +590,7 @@ MSWindowsKeyState::MSWindowsKeyState(
     MSWindowsDesks *desks, void *eventTarget, IEventQueue *events, deskflow::KeyMap &keyMap,
     std::vector<std::string> layouts, bool isLangSyncEnabled
 )
-    : KeyState(events, keyMap, std::move(layouts), isLangSyncEnabled),
+    : KeyState(events, keyMap, std::move(layouts), isLangSyncEnabled || Settings::value(Settings::Client::ForceJapaneseLayout).toBool()),
       m_eventTarget(eventTarget),
       m_desks(desks),
       m_keyLayout(GetKeyboardLayout(0)),
@@ -598,6 +601,7 @@ MSWindowsKeyState::MSWindowsKeyState(
       m_originalSavedModifiers(0),
       m_events(events)
 {
+  m_forceJapaneseLayout = Settings::value(Settings::Client::ForceJapaneseLayout).toBool();
   init();
 }
 
@@ -753,14 +757,14 @@ void MSWindowsKeyState::sendKeyEvent(
 
 void MSWindowsKeyState::fakeKeyDown(KeyID id, KeyModifierMask mask, KeyButton button, const std::string &lang)
 {
-  KeyState::fakeKeyDown(id, mask, button, lang);
+  KeyState::fakeKeyDown(id, mask, button, deskflow::jis::language(lang, m_forceJapaneseLayout));
 }
 
 bool MSWindowsKeyState::fakeKeyRepeat(
     KeyID id, KeyModifierMask mask, int32_t count, KeyButton button, const std::string &lang
 )
 {
-  return KeyState::fakeKeyRepeat(id, mask, count, button, lang);
+  return KeyState::fakeKeyRepeat(id, mask, count, button, deskflow::jis::language(lang, m_forceJapaneseLayout));
 }
 
 // We must use SendSAS (Secure Attention Sequence) to simulate Ctrl+Alt+Del (since Windows Vista).

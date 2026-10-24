@@ -9,6 +9,7 @@
 #include "KeyStateTests.h"
 #include "base/EventQueue.h"
 #include "deskflow/KeyMap.h"
+#include "common/JISKeyboard.h"
 
 #include "MockEventQueue.h"
 #include "MockKeyMap.h"
@@ -251,6 +252,41 @@ void KeyStateTests::fakeKeyDown_langSyncDisabled_keepsLocalGroup()
   QCOMPARE(keyState.countStrokes(deskflow::KeyMap::Keystroke::KeyType::Group), 0);
   QVERIFY(keyState.countStrokes(deskflow::KeyMap::Keystroke::KeyType::Button) > 0);
   QCOMPARE(keyState.m_faked.front().m_data.m_button.m_button, kSharedButton);
+}
+
+void KeyStateTests::fixedJapaneseLayout_mapsPressAndRepeatToJISPositions()
+{
+  for (const std::string actual : {"en", "ja"}) {
+    MockEventQueue events;
+    deskflow::KeyMap map;
+    deskflow::KeyMap::KeyItem item;
+    item.m_id = '(';
+    item.m_group = 0;
+    item.m_button = 9; // US Shift+9
+    map.addKeyEntry(item);
+    item.m_group = 1;
+    item.m_button = 8; // JIS Shift+8
+    map.addKeyEntry(item);
+    map.finish();
+    RecordingKeyState state(&events, map, {"en", "ja"}, true);
+    state.m_activeGroup = 0; // Foreground app was left on English.
+    const auto language = deskflow::jis::language(actual, true);
+    state.fakeKeyDown('(', 0, 55, language);
+    QCOMPARE(state.countStrokes(deskflow::KeyMap::Keystroke::KeyType::Group), 1);
+    QVERIFY(state.countStrokes(deskflow::KeyMap::Keystroke::KeyType::Button) > 0);
+    for (const auto &stroke : state.m_faked) {
+      if (stroke.m_type == deskflow::KeyMap::Keystroke::KeyType::Button) {
+        QCOMPARE(stroke.m_data.m_button.m_button, KeyButton(8));
+      }
+    }
+    state.m_faked.clear();
+    QVERIFY(state.fakeKeyRepeat('(', 0, 1, 55, language));
+    for (const auto &stroke : state.m_faked) {
+      if (stroke.m_type == deskflow::KeyMap::Keystroke::KeyType::Button) {
+        QCOMPARE(stroke.m_data.m_button.m_button, KeyButton(8));
+      }
+    }
+  }
 }
 
 QTEST_MAIN(KeyStateTests)

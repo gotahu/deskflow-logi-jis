@@ -142,6 +142,7 @@ void SettingsDialog::initConnections() const
   connect(ui->cbRunExitCommand, &QCheckBox::toggled, this, &SettingsDialog::setButtonBoxEnabledButtons);
   connect(ui->cbTrackpadInvertY, &QCheckBox::toggled, this, &SettingsDialog::setButtonBoxEnabledButtons);
   connect(ui->sbTrackpadScroll, &QSpinBox::valueChanged, this, &SettingsDialog::setButtonBoxEnabledButtons);
+  connect(ui->cbForceJapaneseLayout, &QCheckBox::toggled, this, &SettingsDialog::setButtonBoxEnabledButtons);
   connect(ui->cbSwitchToAsciiOnLeave, &QCheckBox::toggled, this, &SettingsDialog::setButtonBoxEnabledButtons);
   connect(ui->lineCommandEnter, &QLineEdit::textChanged, this, &SettingsDialog::setButtonBoxEnabledButtons);
   connect(ui->lineCommandExit, &QLineEdit::textChanged, this, &SettingsDialog::setButtonBoxEnabledButtons);
@@ -247,6 +248,7 @@ void SettingsDialog::accept()
   Settings::setValue(Settings::Core::ComputerExitCommand, ui->lineCommandExit->text());
   Settings::setValue(Settings::Server::MacTrackpadInvertYScroll, ui->cbTrackpadInvertY->isChecked());
   Settings::setValue(Settings::Server::MacTrackpadVerticalScrollPercent, ui->sbTrackpadScroll->value());
+  Settings::setValue(Settings::Server::ForceJapaneseLayout, ui->cbForceJapaneseLayout->isChecked());
   Settings::setValue(Settings::Server::SwitchToAsciiOnLeave, ui->cbSwitchToAsciiOnLeave->isChecked());
 
   Settings::ProcessMode mode;
@@ -279,6 +281,8 @@ void SettingsDialog::loadFromConfig()
   ui->cbTrackpadInvertY->setChecked(Settings::value(Settings::Server::MacTrackpadInvertYScroll).toBool());
   ui->sbTrackpadScroll->setValue(Settings::value(Settings::Server::MacTrackpadVerticalScrollPercent).toInt());
   ui->trackpadScrollControls->setVisible(deskflow::platform::isMac());
+  ui->cbForceJapaneseLayout->setChecked(Settings::value(Settings::Server::ForceJapaneseLayout).toBool());
+  ui->cbForceJapaneseLayout->setVisible(deskflow::platform::isMac());
   ui->cbSwitchToAsciiOnLeave->setChecked(Settings::value(Settings::Server::SwitchToAsciiOnLeave).toBool());
   ui->cbSwitchToAsciiOnLeave->setVisible(deskflow::platform::isMac());
   ui->lblEmergencyReturnShortcut->setVisible(deskflow::platform::isMac());
@@ -403,6 +407,7 @@ void SettingsDialog::updateControls()
   ui->lineCommandEnter->setEnabled(writable && ui->cbRunEnterCommand->isChecked());
   ui->lineCommandExit->setEnabled(writable && ui->cbRunExitCommand->isChecked());
   ui->trackpadScrollControls->setEnabled(writable && !isClientMode());
+  ui->cbForceJapaneseLayout->setEnabled(writable && !isClientMode());
   ui->cbSwitchToAsciiOnLeave->setEnabled(writable && !isClientMode());
 
   // Portable mode only ever applies to Windows.
@@ -460,6 +465,7 @@ bool SettingsDialog::isModified() const
       (ui->lineCommandExit->text() != Settings::value(Settings::Core::ComputerExitCommand).toString()) ||
       (ui->cbTrackpadInvertY->isChecked() != Settings::value(Settings::Server::MacTrackpadInvertYScroll).toBool()) ||
       (ui->sbTrackpadScroll->value() != Settings::value(Settings::Server::MacTrackpadVerticalScrollPercent).toInt()) ||
+      (ui->cbForceJapaneseLayout->isChecked() != Settings::value(Settings::Server::ForceJapaneseLayout).toBool()) ||
       (ui->cbSwitchToAsciiOnLeave->isChecked() != Settings::value(Settings::Server::SwitchToAsciiOnLeave).toBool()) ||
       (I18N::nativeTo639Name(ui->comboLanguage->currentText()) != Settings::value(Settings::Core::Language).toString());
 
@@ -499,6 +505,7 @@ bool SettingsDialog::isDefault() const
       (ui->cbRunExitCommand->isChecked() == Settings::defaultValue(Settings::Core::EnableExitCommand).toBool()) &&
       (ui->cbTrackpadInvertY->isChecked() == Settings::defaultValue(Settings::Server::MacTrackpadInvertYScroll).toBool()) &&
       (ui->sbTrackpadScroll->value() == Settings::defaultValue(Settings::Server::MacTrackpadVerticalScrollPercent).toInt()) &&
+      (ui->cbForceJapaneseLayout->isChecked() == Settings::defaultValue(Settings::Server::ForceJapaneseLayout).toBool()) &&
       (ui->cbSwitchToAsciiOnLeave->isChecked() ==
        Settings::defaultValue(Settings::Server::SwitchToAsciiOnLeave).toBool()) &&
       (ui->comboLanguage->currentText() == "English")
@@ -524,6 +531,7 @@ void SettingsDialog::resetToDefault()
   ui->lineCommandExit->setText(Settings::defaultValue(Settings::Core::ComputerExitCommand).toString());
   ui->cbTrackpadInvertY->setChecked(Settings::defaultValue(Settings::Server::MacTrackpadInvertYScroll).toBool());
   ui->sbTrackpadScroll->setValue(Settings::defaultValue(Settings::Server::MacTrackpadVerticalScrollPercent).toInt());
+  ui->cbForceJapaneseLayout->setChecked(Settings::defaultValue(Settings::Server::ForceJapaneseLayout).toBool());
   ui->cbSwitchToAsciiOnLeave->setChecked(Settings::defaultValue(Settings::Server::SwitchToAsciiOnLeave).toBool());
 
   const auto autoHide = Settings::defaultValue(Settings::Gui::Autohide).toBool();

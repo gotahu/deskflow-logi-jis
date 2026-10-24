@@ -169,6 +169,7 @@ protected:
   KeyModifierMask &getActiveModifiersRValue() override;
 
 private:
+  bool m_forceJapaneseLayout = false;
   using GroupList = std::vector<HKL>;
 
   bool getGroups(GroupList &) const;

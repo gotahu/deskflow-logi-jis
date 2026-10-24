@@ -38,6 +38,12 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="cbForceJapaneseLayout">
+     <property name="text"><string>Always use the Japanese keyboard layout (JIS)</string></property>
+     <property name="toolTip"><string>Uses the installed Japanese layout regardless of the server input language. This takes precedence over language synchronization. IME on/off keys still work.</string></property>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string>Scroll Modifiers</string>

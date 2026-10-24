@@ -7,6 +7,7 @@
  */
 
 #include "server/Server.h"
+#include "common/JISKeyboard.h"
 
 #include "base/IEventQueue.h"
 #include "base/Log.h"
@@ -1235,7 +1236,9 @@ void Server::handleClipboardChanged(const Event &event, BaseClientProxy *client)
 void Server::handleKeyDownEvent(const Event &event)
 {
   const auto *info = static_cast<IPlatformComputer::KeyInfo *>(event.getData());
-  auto lang = AppUtil::instance().getCurrentLanguageCode();
+  auto lang = deskflow::jis::language(
+      AppUtil::instance().getCurrentLanguageCode(), Settings::value(Settings::Server::ForceJapaneseLayout).toBool()
+  );
   onKeyDown(info->m_key, info->m_mask, info->m_button, lang, info->m_computers.c_str());
 }
 
@@ -1248,7 +1251,9 @@ void Server::handleKeyUpEvent(const Event &event)
 void Server::handleKeyRepeatEvent(const Event &event)
 {
   const auto *info = static_cast<IPlatformComputer::KeyInfo *>(event.getData());
-  auto lang = AppUtil::instance().getCurrentLanguageCode();
+  auto lang = deskflow::jis::language(
+      AppUtil::instance().getCurrentLanguageCode(), Settings::value(Settings::Server::ForceJapaneseLayout).toBool()
+  );
   onKeyRepeat(info->m_key, info->m_mask, info->m_count, info->m_button, lang);
 }
 

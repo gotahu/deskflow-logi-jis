@@ -42,6 +42,7 @@ public:
     inline static const auto InvertXScroll = QStringLiteral("client/invertXScroll");
     inline static const auto YScrollScale = QStringLiteral("client/yScrollScale");
     inline static const auto XScrollScale = QStringLiteral("client/xScrollScale");
+    inline static const auto ForceJapaneseLayout = QStringLiteral("client/forceJapaneseLayout");
     inline static const auto LanguageSync = QStringLiteral("client/languageSync");
     inline static const auto NavigationGestureAction1 = QStringLiteral("client/navigationGestureAction1");
     inline static const auto NavigationGestureAction2 = QStringLiteral("client/navigationGestureAction2");
@@ -126,6 +127,7 @@ public:
     inline static const auto RelativeMouseMoves = QStringLiteral("server/relativeMouseMoves");
     inline static const auto SwitchDelay = QStringLiteral("server/switchDelay");
     inline static const auto SwitchDoubleTap = QStringLiteral("server/switchDoubleTap");
+    inline static const auto ForceJapaneseLayout = QStringLiteral("server/forceJapaneseLayout");
     inline static const auto MacTrackpadInvertYScroll = QStringLiteral("server/macTrackpadInvertYScroll");
     inline static const auto MacTrackpadVerticalScrollPercent = QStringLiteral("server/macTrackpadVerticalScrollPercent");
     inline static const auto SwitchToAsciiOnLeave = QStringLiteral("server/switchToAsciiOnLeave");
@@ -287,6 +289,7 @@ private:
       Client::DynamicConnectionRetry
     , Client::InvertYScroll
     , Client::InvertXScroll
+    , Client::ForceJapaneseLayout
     , Client::LanguageSync
     , Client::NavigationGestureAction1
     , Client::NavigationGestureAction2
@@ -352,6 +355,7 @@ private:
     , Server::RelativeMouseMoves
     , Server::SwitchDelay
     , Server::SwitchDoubleTap
+    , Server::ForceJapaneseLayout
     , Server::MacTrackpadInvertYScroll
     , Server::MacTrackpadVerticalScrollPercent
     , Server::SwitchToAsciiOnLeave

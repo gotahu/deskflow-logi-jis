@@ -43,7 +43,8 @@ void ClientConfigDialog::updateControls() const
 {
   const auto writable = Settings::isWritable();
   ui->cbDynamicConnectTime->setEnabled(writable);
-  ui->cbLanguageSync->setEnabled(writable);
+  ui->cbLanguageSync->setEnabled(writable && !ui->cbForceJapaneseLayout->isChecked());
+  ui->cbForceJapaneseLayout->setEnabled(writable);
   ui->cbXScrollInvert->setEnabled(writable);
   ui->sbXScrollScale->setEnabled(writable);
   ui->cbYScrollInvert->setEnabled(writable);
@@ -68,6 +69,10 @@ void ClientConfigDialog::initConnections() const
   connect(
       ui->cbDynamicConnectTime, &QCheckBox::checkStateChanged, this, &ClientConfigDialog::setButtonBoxEnabledButtons
   );
+  connect(ui->cbForceJapaneseLayout, &QCheckBox::toggled, this, [this] {
+    updateControls();
+    setButtonBoxEnabledButtons();
+  });
   connect(ui->cbLanguageSync, &QCheckBox::checkStateChanged, this, &ClientConfigDialog::setButtonBoxEnabledButtons);
   connect(ui->cbYScrollInvert, &QCheckBox::checkStateChanged, this, &ClientConfigDialog::setButtonBoxEnabledButtons);
   connect(ui->sbYScrollScale, &QDoubleSpinBox::valueChanged, this, &ClientConfigDialog::setButtonBoxEnabledButtons);
@@ -96,6 +101,7 @@ bool ClientConfigDialog::isModified() const
 {
   return (ui->cbDynamicConnectTime->isChecked() != Settings::value(Settings::Client::DynamicConnectionRetry).toBool()
          ) ||
+         (ui->cbForceJapaneseLayout->isChecked() != Settings::value(Settings::Client::ForceJapaneseLayout).toBool()) ||
          (ui->cbLanguageSync->isChecked() != Settings::value(Settings::Client::LanguageSync).toBool()) ||
          (ui->cbYScrollInvert->isChecked() != Settings::value(Settings::Client::InvertYScroll).toBool()) ||
          (ui->sbYScrollScale->value() != Settings::value(Settings::Client::YScrollScale).toDouble()) ||
@@ -115,6 +121,7 @@ bool ClientConfigDialog::isDefault() const
 {
   return (ui->cbDynamicConnectTime->isChecked() ==
           Settings::defaultValue(Settings::Client::DynamicConnectionRetry).toBool()) &&
+         (ui->cbForceJapaneseLayout->isChecked() == Settings::defaultValue(Settings::Client::ForceJapaneseLayout).toBool()) &&
          (ui->cbLanguageSync->isChecked() == Settings::defaultValue(Settings::Client::LanguageSync).toBool()) &&
          (ui->cbYScrollInvert->isChecked() == Settings::defaultValue(Settings::Client::InvertYScroll).toBool()) &&
          (ui->sbYScrollScale->value() == Settings::defaultValue(Settings::Client::YScrollScale).toDouble()) &&
@@ -150,6 +157,7 @@ bool ClientConfigDialog::navigationShortcutsValid() const
 void ClientConfigDialog::load()
 {
   ui->cbDynamicConnectTime->setChecked(Settings::value(Settings::Client::DynamicConnectionRetry).toBool());
+  ui->cbForceJapaneseLayout->setChecked(Settings::value(Settings::Client::ForceJapaneseLayout).toBool());
   ui->cbLanguageSync->setChecked(Settings::value(Settings::Client::LanguageSync).toBool());
   ui->cbYScrollInvert->setChecked(Settings::value(Settings::Client::InvertYScroll).toBool());
   ui->sbYScrollScale->setValue(Settings::value(Settings::Client::YScrollScale).toDouble());
@@ -169,6 +177,7 @@ void ClientConfigDialog::load()
 void ClientConfigDialog::resetToDefault()
 {
   ui->cbDynamicConnectTime->setChecked(Settings::defaultValue(Settings::Client::DynamicConnectionRetry).toBool());
+  ui->cbForceJapaneseLayout->setChecked(Settings::defaultValue(Settings::Client::ForceJapaneseLayout).toBool());
   ui->cbLanguageSync->setChecked(Settings::defaultValue(Settings::Client::LanguageSync).toBool());
   ui->cbYScrollInvert->setChecked(Settings::defaultValue(Settings::Client::InvertYScroll).toBool());
   ui->sbYScrollScale->setValue(Settings::defaultValue(Settings::Client::YScrollScale).toDouble());
@@ -188,6 +197,7 @@ void ClientConfigDialog::resetToDefault()
 void ClientConfigDialog::save()
 {
   Settings::setValue(Settings::Client::DynamicConnectionRetry, ui->cbDynamicConnectTime->isChecked());
+  Settings::setValue(Settings::Client::ForceJapaneseLayout, ui->cbForceJapaneseLayout->isChecked());
   Settings::setValue(Settings::Client::LanguageSync, ui->cbLanguageSync->isChecked());
   Settings::setValue(Settings::Client::InvertYScroll, ui->cbYScrollInvert->isChecked());
   Settings::setValue(Settings::Client::YScrollScale, ui->sbYScrollScale->value());
