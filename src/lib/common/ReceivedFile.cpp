@@ -37,7 +37,9 @@ bool ReceivedFile::begin(const QString &name, qint64 size)
   if (!QDir::isAbsolutePath(m_destination) || !QDir(m_destination).exists()) return fail(QStringLiteral("Downloads directory is unavailable"));
   m_file = std::make_unique<QTemporaryFile>(QDir(m_destination).filePath(QStringLiteral(".deskflow-receiving-XXXXXX")));
   if (!m_file->open()) return fail(m_file->errorString());
+#ifndef Q_OS_WIN
   m_file->setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
+#endif
   m_expected = size;
   m_received = 0;
   m_hash.reset();
@@ -66,6 +68,12 @@ QString ReceivedFile::finish(const QByteArray &sha256)
   }
   const auto temporary = m_file->fileName();
   m_file->close();
+#ifdef Q_OS_WIN
+  // QTemporaryFile keeps its native handle after close(). Destroy it before
+  // MoveFileExW; otherwise Windows can reject the move as a sharing violation.
+  m_file->setAutoRemove(false);
+  m_file.reset();
+#endif
   const QFileInfo name(m_name);
   const auto suffix = name.completeSuffix();
   const auto base = suffix.isEmpty() ? m_name : m_name.left(m_name.size() - suffix.size() - 1);
@@ -82,14 +90,16 @@ QString ReceivedFile::finish(const QByteArray &sha256)
     const bool published = ::link(QFile::encodeName(temporary).constData(), QFile::encodeName(target).constData()) == 0;
 #endif
     if (published) {
-#ifdef Q_OS_WIN
-      m_file->setAutoRemove(false);
-#endif
+#ifndef Q_OS_WIN
       m_file.reset(); // Removes the temporary link on Unix; the final file remains.
+#endif
       return target;
     }
     if (!QFileInfo::exists(target) && !QFileInfo(target).isSymLink()) break;
   }
+#ifdef Q_OS_WIN
+  QFile::remove(temporary);
+#endif
   fail(QStringLiteral("Could not save the received file without overwriting an existing file"));
   return {};
 }

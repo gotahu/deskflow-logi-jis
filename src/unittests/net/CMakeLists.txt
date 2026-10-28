@@ -32,6 +32,7 @@ create_test(
 
 create_test(
   NAME FileTransferSessionTests
+  ARGS -o "${CMAKE_CURRENT_BINARY_DIR}/FileTransferSessionTests.txt,txt"
   DEPENDS net
   LIBS base arch mt io ${extra_libs}
   SOURCE FileTransferSessionTests.cpp

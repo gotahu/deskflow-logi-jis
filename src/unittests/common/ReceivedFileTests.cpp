@@ -23,7 +23,7 @@ private Q_SLOTS:
       auto path = receiver.finish(hash);
       QCOMPARE(QFileInfo(path).fileName(), n == 0 ? QStringLiteral("教材.pdf") : QStringLiteral("教材 (1).pdf"));
       QFile file(path);
-      QVERIFY(file.open(QIODevice::ReadOnly));
+      QVERIFY(file.open(QIODevice::ReadWrite));
       QCOMPARE(file.readAll(), data);
     }
     QCOMPARE(QDir(dir.path()).entryList(QDir::Files | QDir::Hidden).size(), 2);

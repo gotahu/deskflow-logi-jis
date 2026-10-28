@@ -12,6 +12,7 @@ create_test(
 )
 create_test(
   NAME FileTransferHubTests
+  ARGS -o "${CMAKE_CURRENT_BINARY_DIR}/FileTransferHubTests.txt,txt"
   DEPENDS gui
   LIBS base arch mt io
   SOURCE FileTransferHubTests.cpp
@@ -20,6 +21,7 @@ create_test(
 
 create_test(
   NAME FileTransferUiTests
+  ARGS -o "${CMAKE_CURRENT_BINARY_DIR}/FileTransferUiTests.txt,txt"
   DEPENDS gui
   LIBS base arch mt io
   SOURCE FileTransferUiTests.cpp

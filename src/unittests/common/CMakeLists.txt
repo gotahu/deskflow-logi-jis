@@ -31,6 +31,7 @@ create_test(
 
 create_test(
   NAME ReceivedFileTests
+  ARGS -o "${CMAKE_CURRENT_BINARY_DIR}/ReceivedFileTests.txt,txt"
   DEPENDS common
   SOURCE ReceivedFileTests.cpp
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/common"

@@ -30,6 +30,14 @@ jobs:
         run: cmake --build build --parallel 4 --target deskflow deskflow-core deskflow-daemon app_translations ServerProxyTests MSWindowsSyntheticKeyTests KeyStateTests JISKeyboardTests MSWindowsLanguageTests WindowsAppCommandTests ReceivedFileTests FileTransferSessionTests FileTransferHubTests FileTransferUiTests
       - name: Test JIS layouts, Windows App Command mapping, protocol and arrows
         run: ctest --test-dir build/src/unittests -R '^(ServerProxyTests|MSWindowsSyntheticKeyTests|KeyStateTests|JISKeyboardTests|MSWindowsLanguageTests|WindowsAppCommandTests|ReceivedFileTests|FileTransferSessionTests|FileTransferHubTests|FileTransferUiTests)$' --output-on-failure
+      - name: Print file transfer test diagnostics
+        if: always()
+        shell: pwsh
+        run: |
+          Get-ChildItem build/src/unittests -Recurse -Filter '*Tests.txt' -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Output $_.FullName
+            Get-Content $_.FullName -Encoding utf8
+          }
       - name: Package portable build
         run: cpack --config build/CPackConfig.cmake -G 7Z -B build
       - uses: actions/upload-artifact@v4
