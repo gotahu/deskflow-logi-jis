@@ -30,6 +30,9 @@ add_library(${target} STATIC
   FileTransferHub.h
   FileTransferWindow.cpp
   FileTransferWindow.h
+  FileDropArea.cpp
+  FileDropArea.h
+  FileDragGesture.h
   FileDragNative.h
   MainWindow.cpp
   MainWindow.h

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
 #include "FileTransferWindow.h"
 #include "FileDragNative.h"
+#include "FileDropArea.h"
 #include "common/Settings.h"
 #include <QApplication>
 #include <QCheckBox>
@@ -16,7 +17,6 @@
 #include <QLabel>
 #include <QListWidget>
 #include <QMimeData>
-#include <QPainter>
 #include <QProgressBar>
 #include <QPushButton>
 #include <QScreen>
@@ -34,48 +34,6 @@ QStringList localFiles(const QMimeData *mime) {
   return paths;
 }
 }
-class FileDropArea : public QWidget
-{
-public:
-  FileDropArea(QWidget *parent, bool edge) : QWidget(parent, edge ? Qt::Tool | Qt::FramelessWindowHint |
-      Qt::WindowStaysOnTopHint | Qt::WindowDoesNotAcceptFocus : Qt::Widget), m_edge(edge) {
-    setAcceptDrops(true);
-    setAttribute(Qt::WA_ShowWithoutActivating, edge);
-    setAttribute(Qt::WA_MacAlwaysShowToolWindow, edge);
-    setAccessibleName(tr("ファイルをドロップして相手へ送信"));
-    if (!edge) setMinimumHeight(120);
-  }
-  std::function<void(const QStringList &)> armed, dropped;
-protected:
-  void dragEnterEvent(QDragEnterEvent *e) override {
-    auto paths = localFiles(e->mimeData());
-    if (paths.isEmpty()) return;
-    e->setDropAction(Qt::CopyAction);
-    e->accept();
-    m_hover = true; update();
-    if (armed) armed(paths);
-  }
-  void dragMoveEvent(QDragMoveEvent *e) override { e->setDropAction(Qt::CopyAction); e->accept(); }
-  void dragLeaveEvent(QDragLeaveEvent *e) override { m_hover = false; update(); e->accept(); }
-  void dropEvent(QDropEvent *e) override {
-    auto paths = localFiles(e->mimeData());
-    if (paths.isEmpty()) return;
-    e->setDropAction(Qt::CopyAction); e->accept();
-    m_hover = false; update();
-    if (dropped) dropped(paths);
-  }
-  void paintEvent(QPaintEvent *) override {
-    QPainter p(this);
-    const auto color = palette().color(m_hover ? QPalette::Highlight : QPalette::Mid);
-    p.fillRect(rect(), palette().brush(m_hover ? QPalette::Highlight : QPalette::Base));
-    p.setPen(color); p.drawRect(rect().adjusted(0,0,-1,-1));
-    p.setPen(palette().color(m_hover ? QPalette::HighlightedText : QPalette::Text));
-    if (!m_edge) p.drawText(rect().adjusted(12,12,-12,-12), Qt::AlignCenter | Qt::TextWordWrap,
-                            tr("ここにファイルをドロップ\n接続先のダウンロードに保存します"));
-  }
-private:
-  bool m_edge, m_hover = false;
-};
 FileTransferWindow::FileTransferWindow(CoreProcess *core, QWidget *parent)
     : QWidget(parent, Qt::Window), m_core(core),
       m_downloads(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation)),
@@ -268,9 +226,11 @@ void FileTransferWindow::scan()
       m_pulse.restart();
     }
   }
-  const bool showEdges = m_cross->isChecked() && m_enabled->isChecked() &&
-                         !m_hub->peers().isEmpty() && fileDragLeftDown() && m_activeName == m_hub->localName();
-  if (showEdges && m_edges.isEmpty()) {
+  const bool canDetectDrag = m_cross->isChecked() && m_enabled->isChecked() &&
+                         !m_hub->peers().isEmpty() && m_activeName == m_hub->localName();
+  const bool dragging = m_edgeGesture.update(canDetectDrag, fileDragLeftDown(), QCursor::pos(),
+                                             QApplication::startDragDistance());
+  if (dragging && m_edges.isEmpty()) {
     for (auto *screen : QGuiApplication::screens()) {
       const auto g = screen->geometry();
       for (const auto r : {QRect(g.left(),g.top(),g.width(),16), QRect(g.left(),g.bottom()-15,g.width(),16),
@@ -283,7 +243,7 @@ void FileTransferWindow::scan()
       }
     }
   }
-  for (auto *edge : m_edges) edge->setVisible(showEdges);
+  for (auto *edge : m_edges) edge->setVisible(dragging);
   if (!m_remoteDrag.isEmpty() && m_activeName == m_hub->localName() && m_cross->isChecked()) {
     m_preview->setText(tr("%1\n離すとダウンロードに保存").arg(m_remoteDrag));
     m_preview->adjustSize(); m_preview->move(QCursor::pos()+QPoint(18,18)); m_preview->show();

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
 #pragma once
 #include "FileTransferHub.h"
+#include "FileDragGesture.h"
 #include "gui/core/CoreProcess.h"
 #include <QElapsedTimer>
 #include <QWidget>
@@ -41,6 +42,7 @@ private:
   QCheckBox *m_enabled, *m_cross;
   QTimer m_scan, m_configure;
   QList<FileDropArea *> m_edges;
+  FileDragGesture m_edgeGesture;
   QStringList m_dragPaths;
   QString m_remoteDrag;
   QElapsedTimer m_dragAge, m_pulse;
