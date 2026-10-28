@@ -18,9 +18,6 @@ create_test(
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/gui"
 )
 
-if(WIN32)
-  target_link_libraries(FileTransferHubTests PRIVATE version)
-endif()
 create_test(
   NAME FileTransferUiTests
   DEPENDS gui
@@ -28,3 +25,8 @@ create_test(
   SOURCE FileTransferUiTests.cpp
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/gui"
 )
+
+if(WIN32)
+  target_link_libraries(FileTransferHubTests version)
+  target_link_libraries(FileTransferUiTests version)
+endif()

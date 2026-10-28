@@ -45,3 +45,8 @@ target_include_directories(common
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/lib>
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src/lib>
 )
+
+# Keep Japanese UI text and file names identical on every MSVC code page.
+if(MSVC)
+  target_compile_options(common PUBLIC "$<$<COMPILE_LANGUAGE:CXX>:/utf-8>")
+endif()
