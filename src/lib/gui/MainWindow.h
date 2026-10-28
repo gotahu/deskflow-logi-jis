@@ -25,6 +25,7 @@
 #include "gui/OSXHelpers.h"
 #endif
 
+namespace deskflow::gui { class FileTransferWindow; }
 class QAction;
 class QMenu;
 class QLocalServer;
@@ -76,6 +77,8 @@ public:
 
 protected:
   void changeEvent(QEvent *e) override;
+  void dragEnterEvent(QDragEnterEvent *e) override;
+  void dropEvent(QDropEvent *e) override;
   bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
@@ -112,6 +115,7 @@ private:
   void updateModeControls();
   void updateModeControlLabels();
   std::unique_ptr<Ui::MainWindow> ui;
+  deskflow::gui::FileTransferWindow *m_fileTransfer = nullptr;
 
   void createMenuBar();
   void setupTrayIcon();

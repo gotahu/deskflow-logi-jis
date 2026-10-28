@@ -30,3 +30,10 @@ create_test(
 )
 
 
+create_test(
+  NAME FileTransferSessionTests
+  DEPENDS net
+  LIBS base arch mt io ${extra_libs}
+  SOURCE FileTransferSessionTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/net"
+)

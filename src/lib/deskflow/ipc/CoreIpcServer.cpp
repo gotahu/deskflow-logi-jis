@@ -7,6 +7,7 @@
 #include "CoreIpcServer.h"
 
 #include "base/Log.h"
+#include "common/FileDragState.h"
 #include "common/Constants.h"
 
 #include <QLocalSocket>
@@ -21,6 +22,8 @@ CoreIpcServer::CoreIpcServer(QObject *parent) : IpcServer(parent, kCoreIpcName, 
   s_instance = this;
 }
 
+bool CoreIpcServer::exists() { return s_instance != nullptr; }
+
 CoreIpcServer &CoreIpcServer::instance()
 {
   assert(s_instance != nullptr);
@@ -29,7 +32,10 @@ CoreIpcServer &CoreIpcServer::instance()
 
 void CoreIpcServer::processCommand(QLocalSocket *clientSocket, const QString &command, const QStringList &parts)
 {
-  Q_UNUSED(parts)
+  if (command == "fileDrag" && parts.size() == 2) {
+    deskflow::armFileDrag(parts.at(1) == "1");
+    return;
+  }
   if (command == QStringLiteral("stop")) {
     LOG_DEBUG("core ipc server got stop message");
     writeToClientSocket(clientSocket, QStringLiteral("ok"));

@@ -8,6 +8,7 @@
 
 #include "server/Server.h"
 #include "common/JISKeyboard.h"
+#include "common/FileDragState.h"
 
 #include "base/IEventQueue.h"
 #include "base/Log.h"
@@ -495,6 +496,7 @@ void Server::switchComputer(BaseClientProxy *dst, int32_t x, int32_t y, bool for
 
     // cut over
     m_active = dst;
+    ipcSendToClient("fileScreen", QString::fromStdString(dst->getName()));
 
     // increment enter sequence number
     ++m_seqNum;
@@ -1568,6 +1570,10 @@ void Server::onScreensaver(bool activated)
 void Server::onKeyDown(KeyID id, KeyModifierMask mask, KeyButton button, const std::string &lang, const char *computers)
 {
   LOG_VERBOSE("onKeyDown id=%d mask=0x%04x button=0x%04x lang=%s", id, mask, button, lang.c_str());
+  if (id == kKeyEscape) {
+    deskflow::armFileDrag(false);
+    ipcSendToClient("fileCancel");
+  }
   assert(m_active != nullptr);
 
   // relay
@@ -1626,6 +1632,10 @@ void Server::onKeyRepeat(KeyID id, KeyModifierMask mask, int32_t count, KeyButto
 void Server::onMouseDown(ButtonID id)
 {
   LOG_VERBOSE("onMouseDown id=%d", id);
+  if (id == kButtonLeft) {
+    deskflow::armFileDrag(false);
+    ipcSendToClient("filePress");
+  }
   assert(m_active != nullptr);
 
   // relay
@@ -1639,6 +1649,10 @@ void Server::onMouseUp(ButtonID id)
 
   // relay
   m_active->mouseUp(id);
+  if (id == kButtonLeft) {
+    deskflow::armFileDrag(false);
+    ipcSendToClient("fileDrop", QString::fromStdString(m_active->getName()));
+  }
 }
 
 void Server::onNavigationGesture(NavigationActionSlot action)

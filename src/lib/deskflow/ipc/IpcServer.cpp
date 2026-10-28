@@ -164,6 +164,10 @@ void IpcServer::broadcastCommand(const QString &command, const QString &args)
   const auto message = args.isEmpty() ? command : QStringLiteral("%1=%2").arg(command, args);
 
   if (m_clients.isEmpty()) {
+    if (command.startsWith("file") && command != "fileScreen") return;
+    if (command == "fileScreen") {
+      m_pendingMessages.removeIf([](const QString &s) { return s.startsWith("fileScreen="); });
+    }
     LOG_VERBOSE(
         "%s ipc server has no clients, message queued: %s", m_typeName.constData(), message.toUtf8().constData()
     );

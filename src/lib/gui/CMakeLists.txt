@@ -8,9 +8,12 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 if(APPLE)
   set (platform_sources
+    FileDragNative.mm
     OSXHelpers.h
     OSXHelpers.mm
   )
+else()
+  set(platform_sources FileDragNative.cpp)
 endif()
 
 add_library(${target} STATIC
@@ -23,6 +26,11 @@ add_library(${target} STATIC
   FileTail.h
   Logger.cpp
   Logger.h
+  FileTransferHub.cpp
+  FileTransferHub.h
+  FileTransferWindow.cpp
+  FileTransferWindow.h
+  FileDragNative.h
   MainWindow.cpp
   MainWindow.h
   MainWindow.ui

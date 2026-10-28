@@ -35,6 +35,12 @@ public:
   inline const static auto UserSettingFile = QStringLiteral("%1/%2.conf").arg(UserDir, kAppName);
   inline const static auto SystemSettingFile = QStringLiteral("%1/%2.conf").arg(SystemDir, kAppName);
 
+  struct Files
+  {
+    inline static const auto Enabled = QStringLiteral("files/enabled");
+    inline static const auto CrossScreen = QStringLiteral("files/crossScreen");
+  };
+
   struct Client
   {
     inline static const auto DynamicConnectionRetry = QStringLiteral("client/dynamicConnectionInterval");
@@ -280,6 +286,7 @@ private:
     , QStringLiteral("core")
     , QStringLiteral("daemon")
     , QStringLiteral("gui")
+    , QStringLiteral("files")
     , QStringLiteral("log")
     , QStringLiteral("security")
     , QStringLiteral("server")
@@ -290,6 +297,8 @@ private:
       Client::DynamicConnectionRetry
     , Client::InvertYScroll
     , Client::InvertXScroll
+    , Files::Enabled
+    , Files::CrossScreen
     , Client::ForceJapaneseLayout
     , Client::WindowsAppCommandToCtrl
     , Client::LanguageSync

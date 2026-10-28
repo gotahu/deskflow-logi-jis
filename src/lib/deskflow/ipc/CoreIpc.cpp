@@ -14,6 +14,7 @@ void ipcSendToClient(const QString &command, const QString &args)
 {
   // Queued because callers may not be on the main thread,
   // and QLocalSocket can only be written to from its owning thread.
+  if (!deskflow::core::ipc::CoreIpcServer::exists()) return;
   auto &server = deskflow::core::ipc::CoreIpcServer::instance();
   QMetaObject::invokeMethod(
       &server, [command, args] { deskflow::core::ipc::CoreIpcServer::instance().broadcastCommand(command, args); },

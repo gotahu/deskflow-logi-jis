@@ -17,6 +17,11 @@ CoreIpcClient::CoreIpcClient(QObject *parent) : IpcClient(parent, kCoreIpcName, 
   // do nothing
 }
 
+void CoreIpcClient::sendFileDrag(bool armed)
+{
+  sendMessage(QStringLiteral("fileDrag=%1").arg(armed ? 1 : 0));
+}
+
 void CoreIpcClient::sendStop()
 {
   sendMessage(QStringLiteral("stop"));

@@ -6,6 +6,7 @@
  */
 
 #include "deskflow/Computer.h"
+#include "common/FileDragState.h"
 #include "base/IEventQueue.h"
 #include "base/Log.h"
 #include "deskflow/IPlatformComputer.h"
@@ -403,6 +404,7 @@ bool Computer::isOnComputer() const
 bool Computer::isLockedToComputer() const
 {
   if (uint32_t buttonID = 0; m_computer->isAnyMouseButtonDown(buttonID)) {
+    if (buttonID == kButtonLeft && deskflow::fileDragArmed()) return false;
     LOG_DEBUG("locked by mouse buttonID: %d", buttonID);
     return true;
   }

@@ -359,6 +359,8 @@ QVariant Settings::defaultValue(const QString &key)
   if (key == Client::YScrollScale || key == Client::XScrollScale)
     return 1.0;
 
+  if (key == Files::Enabled || key == Files::CrossScreen) return true;
+
   if (key == Client::ForceJapaneseLayout || key == Client::WindowsAppCommandToCtrl)
     return deskflow::platform::isWindows();
   if (key == Server::ForceJapaneseLayout)

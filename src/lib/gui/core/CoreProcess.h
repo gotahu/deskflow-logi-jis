@@ -47,6 +47,7 @@ public:
   void applyLogLevel();
   void clearSettings();
   void retryDaemon();
+  void armFileDrag(bool armed);
 
   // getters
   Settings::CoreMode mode() const
@@ -94,6 +95,7 @@ Q_SIGNALS:
   void retryIn(int seconds);
   void peerFingerprint(const QString &fingerprint);
   void missingKeyboardLayouts(const QString &layouts);
+  void fileInputEvent(const QString &kind, const QString &target);
 
 private Q_SLOTS:
   void onProcessFinished(int exitCode, QProcess::ExitStatus);

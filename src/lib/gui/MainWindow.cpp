@@ -26,6 +26,10 @@
 #include "common/UrlConstants.h"
 #include "common/VersionInfo.h"
 #include "gui/Messages.h"
+#include "gui/FileTransferWindow.h"
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
 #include "gui/TlsUtility.h"
 #include "gui/core/CoreProcess.h"
 #include "gui/ipc/DaemonIpcClient.h"
@@ -162,6 +166,12 @@ MainWindow::MainWindow()
   applyConfig();
   m_statusBar->setSecurityIcon(TlsUtility::isEnabled());
   restoreWindow();
+  m_fileTransfer = new deskflow::gui::FileTransferWindow(&m_coreProcess, this);
+  setAcceptDrops(true);
+  auto *fileTransferAction = m_menuFile->addAction(tr("ファイル転送…"), this, [this] {
+    m_fileTransfer->show(); m_fileTransfer->raise(); m_fileTransfer->activateWindow();
+  });
+  if (auto *trayMenu = m_trayIcon->contextMenu()) trayMenu->insertAction(m_actionTrayQuit, fileTransferAction);
 
 #ifdef Q_OS_MACOS
   // Route native quits (Cmd+Q / Apple menu Quit / Dock "Quit") to the usual close-to-tray decision instead.
@@ -1341,4 +1351,18 @@ bool MainWindow::canRunCore() const
   const bool isServer = mode == Settings::CoreMode::Server;
   const bool isClient = mode == Settings::CoreMode::Client;
   return ((isServer || isClient) && (isClient && !ui->lineHostname->text().isEmpty()) || isServer);
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *e)
+{
+  if (e->mimeData()->hasUrls()) { e->setDropAction(Qt::CopyAction); e->accept(); }
+}
+void MainWindow::dropEvent(QDropEvent *e)
+{
+  QStringList paths;
+  for (const auto &url : e->mimeData()->urls()) if (url.isLocalFile()) paths.append(url.toLocalFile());
+  if (!paths.isEmpty()) {
+    e->setDropAction(Qt::CopyAction); e->accept();
+    m_fileTransfer->show(); m_fileTransfer->dropFiles(paths);
+  }
 }

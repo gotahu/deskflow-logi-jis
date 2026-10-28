@@ -624,9 +624,16 @@ void CoreProcess::setProcessState(ProcessState state)
   Q_EMIT processStateChanged(state);
 }
 
+void CoreProcess::armFileDrag(bool armed)
+{
+  if (m_coreIpcClient && m_coreIpcClient->isConnected()) m_coreIpcClient->sendFileDrag(armed);
+}
+
 void CoreProcess::onCoreIpcMessageReceived(const QString &command, const QString &args)
 {
-  if (command == "connectionState") {
+  if (command.startsWith("file")) {
+    Q_EMIT fileInputEvent(command.mid(4), args);
+  } else if (command == "connectionState") {
     const auto metaEnum = QMetaEnum::fromType<ConnectionState>();
     bool ok = false;
     const auto state = static_cast<ConnectionState>(metaEnum.keyToValue(args.toUtf8().constData(), &ok));
